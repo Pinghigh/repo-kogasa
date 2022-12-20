@@ -57,10 +57,10 @@ jobs:
 
       - name: Build Non-AUR packages
         id: makepkg
-        uses: ./build-nonaur-action
+        uses: Pinghigh/pkgbuild-action@v1
         with:
           pkgdir: ${{ matrix.PKGBUILDs }}
-          aurDeps: true
+          makepkgArgs: "-s --skipchecksums --cleanbuild --skippgpcheck"
           
       - uses: actions/upload-artifact@v3
         with:
