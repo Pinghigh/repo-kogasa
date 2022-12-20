@@ -5,4 +5,5 @@ RUN date
 RUN pacman -Syu --noconfirm
 RUN pacman -S base-devel git python rclone pyalpm --noconfirm && sed -i '/E_ROOT/d' /usr/bin/makepkg
 COPY entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"] 
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/bin/bash","/entrypoint.sh"] 
