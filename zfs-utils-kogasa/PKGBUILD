@@ -48,8 +48,7 @@ build() {
                 --with-python="$PWD/python3-fake" \
                 --enable-pyzfs=no \
                 --enable-systemd \
-                --with-config=user
-                --libdir=/usr/lib \
+                --with-config=user \
                 --datadir=/usr/share \
                 --includedir=/usr/include
     make LLVM=1 LLVM_IAS=1 -j8
