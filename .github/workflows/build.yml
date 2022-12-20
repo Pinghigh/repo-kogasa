@@ -60,7 +60,7 @@ jobs:
         uses: Pinghigh/pkgbuild-action@v4.1
         with:
           pkgdir: ${{ matrix.PKGBUILDs }}
-          makepkgArgs: "-s --skipchecksums --cleanbuild --skippgpcheck"
+          makepkgArgs: "-s --cleanbuild --skippgpcheck"
           
       - uses: actions/upload-artifact@v3
         with:
