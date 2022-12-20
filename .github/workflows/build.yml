@@ -46,7 +46,7 @@ jobs:
   buildNonAUR:
     strategy:
       matrix:
-        PKGBUILDs: [linux-tikogasa, zfs-utils]
+        PKGBUILDs: [linux-tikogasa, zfs-utils-kogasa]
 
       fail-fast: false
       
