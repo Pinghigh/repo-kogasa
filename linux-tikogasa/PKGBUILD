@@ -215,7 +215,7 @@
     makedepends=('bc' 'libelf' 'pahole' 'cpio' 'perl' 'tar' 'xz' 'zstd' 'gcc' 'gcc-libs' 'glibc' 'binutils' 'make' 'patch')
     # LLVM makedepends
     if true; then
-        makedepends+=('llvm-git' 'lld-git' 'llvm-libs-git' 'python')
+        makedepends+=('llvm-git' 'lld-git' 'llvm-libs-git' 'clang-git' 'python')
         BUILD_FLAGS=(
             CC=clang
             LD=ld.lld
@@ -748,7 +748,7 @@
                 cd ${srcdir}/"zfs"
                 ./autogen.sh
                 sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
-                ./configure KERNEL_LLVM=/opt/aocc/bin KERNEL_CC=/opt/aocc/bin/clang KERNEL_LD=/opt/aocc/bin/ld.lld TESTJOBS=8 --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
+                ./configure KERNEL_LLVM=1 TESTJOBS=8 --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
                     --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
                     --libexecdir=/usr/lib/zfs --with-config=kernel \
                     --with-linux=${srcdir}/$_srcname \
