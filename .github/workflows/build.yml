@@ -6,47 +6,47 @@ on:
     - cron:  '1 */8 * * *'
 
 jobs:
-  buildAUR:
-    strategy:
-      matrix:
-        repos: [osu-lazer, weechat-notify-send, fpp, redsocks, drill, git-cola, makedeb, qbittorrent-qt5, realesrgan-ncnn-vulkan, python-octodns]
-        include:
-          - repos: git-cola
-            preinstall-pkgs: "at-spi2-core"
-          - repos: realesrgan-ncnn-vulkan
-            preinstall-pkgs: "vulkan-intel"
-          - repos: python-octodns
-            preinstall-pkgs: "python-pip"
+  # buildAUR:
+  #   strategy:
+  #     matrix:
+  #       repos: [osu-lazer, weechat-notify-send, fpp, redsocks, drill, git-cola, makedeb, qbittorrent-qt5, realesrgan-ncnn-vulkan, python-octodns]
+  #       include:
+  #         - repos: git-cola
+  #           preinstall-pkgs: "at-spi2-core"
+  #         - repos: realesrgan-ncnn-vulkan
+  #           preinstall-pkgs: "vulkan-intel"
+  #         - repos: python-octodns
+  #           preinstall-pkgs: "python-pip"
 
-      fail-fast: false
+  #     fail-fast: false
       
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v3
     
-    - uses: ./build-aur-action
-      with:
-        repo-name: ${{ matrix.repos }}
-        preinstallPkgs: ${{ matrix.preinstall-pkgs }}
+    # - uses: ./build-aur-action
+    #   with:
+    #     repo-name: ${{ matrix.repos }}
+    #     preinstallPkgs: ${{ matrix.preinstall-pkgs }}
     
-    - uses: actions/upload-artifact@v3
-      with:
-        path: ./*/*.pkg.tar.zst
-        name: ${{ matrix.repos }}
-        if-no-files-found: error
+    # - uses: actions/upload-artifact@v3
+    #   with:
+    #     path: ./*/*.pkg.tar.zst
+    #     name: ${{ matrix.repos }}
+    #     if-no-files-found: error
         
-    - uses: ncipollo/release-action@v1
-      with:
-        allowUpdates: true
-        tag: "packages"
-        artifacts: "./*/*.zst"
-        token: ${{ secrets.GITHUB_TOKEN }}
+    # - uses: ncipollo/release-action@v1
+    #   with:
+    #     allowUpdates: true
+    #     tag: "packages"
+    #     artifacts: "./*/*.zst"
+    #     token: ${{ secrets.GITHUB_TOKEN }}
 
   buildNonAUR:
     strategy:
       matrix:
-        PKGBUILDs: [breeze10, python-pyclipper]
+        PKGBUILDs: [linux-tikogasa, zfs-utils]
 
       fail-fast: false
       
@@ -65,7 +65,6 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           path: ./*/*.pkg.tar.zst
-          name: ${{ matrix.PKGBUILDs }}
           if-no-files-found: error
       
       - uses: ncipollo/release-action@v1
@@ -78,7 +77,8 @@ jobs:
   uploadToOneDrive:      
     runs-on: ubuntu-latest
     if: always()
-    needs: [buildAUR, buildNonAUR]
+    # needs: [buildAUR, buildNonAUR]
+    needs: [buildNonAUR]
 
     steps:
       - uses: actions/checkout@v3
@@ -93,8 +93,8 @@ jobs:
           RCLONE_ONEDRIVE_REGION: global
           RCLONE_ONEDRIVE_TOKEN: ${{ secrets.RCLONE_ONEDRIVE_TOKEN }}
           RCLONE_ONEDRIVE_DRIVE_ID: ${{ secrets.RCLONE_ONEDRIVE_DRIVE_ID }}
-          RCLONE_ONEDRIVE_DRIVE_TYPE: personal
-          dest_path: /archrepo
-          repo_name: vifly
+          RCLONE_ONEDRIVE_DRIVE_TYPE: business
+          dest_path: /RepoTikogasa
+          repo_name: repo-kogasa
           gpg-privatekey: ${{ secrets.gpg_private_key }}
           local_path: ${{ steps.download.outputs.download-path }}

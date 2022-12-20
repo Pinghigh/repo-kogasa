@@ -23,7 +23,11 @@ useradd builder -m
 # When installing dependencies, makepkg will use sudo
 # Give user `builder` passwordless sudo access
 echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-
+mkdir /home/builder/.config/
+mkdir /home/builder/.config/pacman/
+install -D /etc/makepkg.conf /home/builder/.config/pacman/makepkg.conf
+sed -i "s|-march=x86-64 -mtune=generic|-march=znver2 -mtune=znver2|g" /home/builder/.config/pacman/makepkg.conf
+sed -i "s|-O2|-O3|g" /home/builder/.config/pacman/makepkg.conf
 # Give all users (particularly builder) full access to these files
 chmod -R a+rw .
 
@@ -33,7 +37,7 @@ cd "${INPUT_PKGDIR:-.}"
 
 # Just generate .SRCINFO
 if ! [ -f .SRCINFO ]; then
-	sudo -u builder makepkg --printsrcinfo > .SRCINFO
+	sudo -u builder makepkg  --printsrcinfo > .SRCINFO
 fi
 
 function recursive_build () {
@@ -74,7 +78,7 @@ fi
 # Build packages
 # INPUT_MAKEPKGARGS is intentionally unquoted to allow arg splitting
 # shellcheck disable=SC2086
-sudo -H -u builder makepkg --syncdeps --noconfirm ${INPUT_MAKEPKGARGS:-}
+sudo -H -u builder makepkg --skipchecksums --cleanbuild --skippgpcheck --syncdeps --noconfirm ${INPUT_MAKEPKGARGS:-}
 
 # Get array of packages to be built
 mapfile -t PKGFILES < <( sudo -u builder makepkg --packagelist )
