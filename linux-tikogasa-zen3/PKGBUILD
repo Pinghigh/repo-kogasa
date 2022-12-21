@@ -187,7 +187,7 @@
     _latency_nice=${_latency_nice-}
 
     pkgsuffix=tikogasa
-    pkgbase=linux-$pkgsuffix
+    pkgbase=linux-$pkgsuffix-zen3
     _major=6.1
     _minor=0
     #_minorc=$((_minor+1))
@@ -198,7 +198,7 @@
     #_stablerc=${_major}-${_rcver}
     #_srcname=linux-${_stable}
     _srcname=linux-${_major}
-    pkgdesc='Linux BORE scheduler Kernel by CachyOS with other patches and improvements, x86-64-v4 enabled'
+    pkgdesc='Linux BORE scheduler Kernel by CachyOS with other patches and improvements, zen3 enabled'
     pkgrel=3
     _kernver=$pkgver-$pkgrel
     arch=('x86_64' 'x86_64_v3')
@@ -210,12 +210,6 @@
     # LLVM makedepends
     if true; then
         makedepends+=('llvm' 'llvm-libs' 'clang' 'python' 'lld')
-        BUILD_FLAGS=(
-            CC=clang
-            LD=ld.lld
-            LLVM=1
-            LLVM_IAS=1
-        )
     fi
     # ZFS makedepends
     if true; then
@@ -228,6 +222,7 @@
         "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
         "linux-patches::git+https://github.com/xanmod/linux-patches"
         "config" 
+        "aocc4.tar::https://wm8lf-my.sharepoint.com/:u:/g/personal/pinghigh_wm8lf_onmicrosoft_com/EUIlwtCV_iFKvCgZWmH40NsBSMBJdwjN9H3n65RB8V7ZSg?e=fzokdW&download=1"
         "https://ghproxy.com/https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-6.0.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
         "${_patchsource}/misc/0001-Add-latency-priority-for-CFS-class.patch"
@@ -238,16 +233,14 @@
     if true; then
         source+=("git+https://github.com/cachyos/zfs.git#commit=21bd7661334cd865d17934bebbcaf8d3356279ee")
     fi
-        ## Kernel CFI Patch
-    if [ -n "$_use_kcfi" ]; then
-        source+=("${_patchsource}/misc/0001-kcfi.patch")
-        depends+=(llvm-git llvm-libs-git python)
-        BUILD_FLAGS=(
-            CC=/opt/aocc/bin/clang
-            LD=/opt/aocc/bin/ld.lld
-            LLVM=/opt/aocc/bin/
-        )
+    ## Latency NICE Support
+    if [ -n "$_latency_nice" ]; then
+        if [[ "$_cpusched" = "bore"  || "$_cpusched" = "cfs" || "$_cpusched" = "hardened" ]]; then
+             source+=("${_patchsource}/misc/0001-Add-latency-priority-for-CFS-class.patch")
+        fi
     fi
+
+    ## Kernel CFI Patch
     ## NEST Support
     #if [ -n "$_nest" ]; then
     #    if [[ "$_cpusched" = "bore"  || "$_cpusched" = "cfs" || "$_cpusched" = #"hardened" ]]; then
@@ -268,6 +261,8 @@
     export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
     prepare() {
+        llvmpath=${srcdir}/aocc-compiler-4.0.0/bin/
+        BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1"
         cp clearlinux-linux/*.patch ./
         cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
         cd ${srcdir}/$_srcname
@@ -296,7 +291,7 @@
         ### Select CPU optimization
         if true; then
             MARCH=$(echo $_processor_opt|tr '[:lower:]' '[:upper:]'&&echo)
-            MARCH2=GENERIC_CPU4
+            MARCH2=MZEN3
             scripts/config -k --disable CONFIG_GENERIC_CPU
             scripts/config -k --enable CONFIG_${MARCH2}
         fi
@@ -575,6 +570,7 @@
         scripts/config --enable SCHED_BORE
 
         ### Enable LRNG
+        ### NOW DISABLE
         if false; then
             echo "Enabling Linux Random Number Generator ..."
             scripts/config --disable RANDOM_DEFAULT_IMPL \
@@ -701,8 +697,8 @@
             # disable CONFIG_DEBUG_INFO=y at build time otherwise memory usage blows up
             # and can easily overwhelm a system with 32 GB of memory using a tmpfs build
             # partition ... this was introduced by FS#66260, see:
-                # https://git.archlinux.org/svntogit/packages.git/commit/trunk?h=packages/linux&id=663b08666b269eeeeaafbafaee07fd03389ac8d7
-                scripts/config --disable CONFIG_CGROUP_BPF
+            # https://git.archlinux.org/svntogit/packages.git/commit/trunk?h=packages/linux&id=663b08666b269eeeeaafbafaee07fd03389ac8d7
+            scripts/config --disable CONFIG_CGROUP_BPF
             scripts/config --disable CONFIG_BPF_LSM
             scripts/config --disable CONFIG_BPF_PRELOAD
             scripts/config --disable CONFIG_BPF_LIRC_MODE2
@@ -728,33 +724,20 @@
         echo "Rewrite configuration..."
         make ${BUILD_FLAGS[*]} prepare -j8
 
-        if true; then
-            cd ${srcdir}/"zfs"
+        ### Builtin ZFS support
+        echo "Enabling ZFS"
+        cd ${srcdir}/"zfs"
+        ./autogen.sh
+        sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
+        ./configure KERNEL_LLVM=${llvmpath} TESTJOBS=8 --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
+            --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
+            --libexecdir=/usr/lib/zfs --with-config=kernel \
+            --with-linux=${srcdir}/$_srcname \
+            --enable-linux-builtin
+        ./copy-builtin ${srcdir}/${_srcname}
 
-            if true; then
-                cd ${srcdir}/"zfs"
-                ./autogen.sh
-                sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
-                ./configure KERNEL_LLVM=1 TESTJOBS=8 --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
-                    --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
-                    --libexecdir=/usr/lib/zfs --with-config=kernel \
-                    --with-linux=${srcdir}/$_srcname \
-                    --enable-linux-builtin
-                ./copy-builtin ${srcdir}/${_srcname}
-            else
-                ./autogen.sh
-                sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
-                ./configure --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
-                    --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
-                    --libexecdir=/usr/lib/zfs --with-config=kernel \
-                    --with-linux=${srcdir}/$_srcname
-                ./copy-builtin ${srcdir}/${_srcname}
-            fi
-
-            msg2 "Enable ZFS"
         cd ../${_srcname}
-            scripts/config --enable CONFIG_ZFS
-        fi
+        scripts/config --enable CONFIG_ZFS
 
         yes "" | make ${BUILD_FLAGS[*]} config >/dev/null
         diff -u ../config .config || :
