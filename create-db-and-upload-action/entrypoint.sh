@@ -18,8 +18,7 @@ if [ ! -f ~/.config/rclone/rclone.conf ]; then
 fi
 
 if [ ! -z "$gpg_key" ]; then
-    echo "$gpg_key" >> private.key
-    gpg --import --pinentry-mode loopback --batch --passphrase $passphrase private.key
+    echo "$gpg_key" | gpg --import 
 fi
 
 cd upload_packages || exit 1
