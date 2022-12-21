@@ -4,7 +4,7 @@ set -e
 init_path=$PWD
 mkdir upload_packages
 cp $local_path/*/*/*.tar.zst ./upload_packages/
-
+gpg_key=${gpg-privatekey}
 if [ ! -f ~/.config/rclone/rclone.conf ]; then
     mkdir --parents ~/.config/rclone
     echo "[onedrive]" >> ~/.config/rclone/rclone.conf

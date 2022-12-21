@@ -96,5 +96,5 @@ jobs:
           RCLONE_ONEDRIVE_DRIVE_TYPE: business
           dest_path: /RepoTikogasa
           repo_name: repo-kogasa
-          gpg-privatekey: ${{ secrets.gpg_private_key }}
+          gpg-privatekey: ${{ secrets.GPG_PRIVATE_KEY }}
           local_path: ${{ steps.download.outputs.download-path }}

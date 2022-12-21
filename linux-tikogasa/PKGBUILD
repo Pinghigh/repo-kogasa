@@ -224,7 +224,7 @@
     fi
     _patchsource="https://ghproxy.com/https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
     source=(
-        "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+        "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
         "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
         "linux-patches::git+https://github.com/xanmod/linux-patches"
         "config" 
