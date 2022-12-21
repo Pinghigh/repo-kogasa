@@ -97,4 +97,5 @@ jobs:
           dest_path: /RepoTikogasa
           repo_name: repo-kogasa
           gpg-privatekey: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
           local_path: ${{ steps.download.outputs.download-path }}

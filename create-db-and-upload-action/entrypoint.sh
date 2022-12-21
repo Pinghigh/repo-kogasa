@@ -19,7 +19,7 @@ fi
 
 if [ ! -z "$gpg_key" ]; then
     echo "$gpg_key" >> private.key
-    gpg --import private.key
+    gpg --import --pinentry-mode loopback --batch --passphrase $passphrase private.key
 fi
 
 cd upload_packages || exit 1
