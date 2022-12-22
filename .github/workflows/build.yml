@@ -62,17 +62,17 @@ jobs:
           pkgdir: ${{ matrix.PKGBUILDs }}
           makepkgArgs: "-s --cleanbuild --skippgpcheck"
           
-      - uses: actions/upload-artifact@v3
-        with:
-          path: ./*/*.pkg.tar.zst
-          if-no-files-found: error
+      # - uses: actions/upload-artifact@v3
+      #   with:
+      #     path: ./*/*.pkg.tar.zst
+      #     if-no-files-found: error
       
-      - uses: ncipollo/release-action@v1
-        with:
-          allowUpdates: true
-          tag: "packages"
-          artifacts: ${{ steps.makepkg.outputs.pkgfile0 }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+      # - uses: ncipollo/release-action@v1
+      #   with:
+      #     allowUpdates: true
+      #     tag: "packages"
+      #     artifacts: ${{ steps.makepkg.outputs.pkgfile0 }}
+      #     token: ${{ secrets.GITHUB_TOKEN }}
           
   uploadToOneDrive:      
     runs-on: ubuntu-latest
