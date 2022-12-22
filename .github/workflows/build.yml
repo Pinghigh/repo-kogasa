@@ -46,7 +46,7 @@ jobs:
   buildNonAUR:
     strategy:
       matrix:
-        PKGBUILDs: [linux-tikogasa, aocc, linux-tikogasa-zen2, linux-tikogasa-zen3, zfs-utils-kogasa]
+        PKGBUILDs: [linux-tikogasa-zen2, linux-tikogasa-zen3]
 
       fail-fast: false
       

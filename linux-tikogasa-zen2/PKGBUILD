@@ -206,17 +206,8 @@
     license=('GPL2')
     options=('!strip')
     _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
-    makedepends=(bc libelf make pahole cpio perl patch tar xz clang lld initramfs kmod llvm-libs llvm git)
+    makedepends=(bc libelf make pahole cpio perl patch tar zstd xz initramfs kmod python git)
     BUILD_FLAGS="-j "
-    # LLVM makedepends
-    if true; then
-        makedepends+=('llvm' 'llvm-libs' 'clang' 'python' 'lld')
-    fi
-    # ZFS makedepends
-    if true; then
-        makedepends+=(git)
-
-    fi
     _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
     source=(
         "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
