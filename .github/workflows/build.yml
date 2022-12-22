@@ -47,6 +47,8 @@ jobs:
     strategy:
       matrix:
         PKGBUILDs: [linux-tikogasa, aocc, linux-tikogasa-zen2, linux-tikogasa-zen3, zfs-utils-kogasa, ffmpeg-amd-full]
+        DEFAULT: [linux-tikogasa, aocc, linux-tikogasa-zen2, linux-tikogasa-zen3, zfs-utils-kogasa]
+        USEAUR: [ffmpeg-amd-full]
 
       fail-fast: false
       
@@ -57,16 +59,22 @@ jobs:
 
       - name: Build Non-AUR packages
         id: makepkg
+        uses: Pinghigh/pkgbuild-action@v4.2
+        with:
+          pkgdir: ${{ matrix.DEFAULT }}
+          makepkgArgs: "-s --cleanbuild --skippgpcheck"
+      - name: Build Non-AUR(with aurDep) packages
+        id: makepkg
         uses: Pinghigh/pkgbuild-action@v4.3
         with:
-          pkgdir: ${{ matrix.PKGBUILDs }}
+          pkgdir: ${{ matrix.USEAUR }}
           makepkgArgs: "-s --cleanbuild --skippgpcheck"
           aurDeps: true
           
-      # - uses: actions/upload-artifact@v3
-      #   with:
-      #     path: ./*/*.pkg.tar.zst
-      #     if-no-files-found: error
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./*/*.pkg.tar.zst
+          if-no-files-found: error
       
       # - uses: ncipollo/release-action@v1
       #   with:
