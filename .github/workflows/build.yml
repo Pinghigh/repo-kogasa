@@ -45,9 +45,6 @@ jobs:
 
   buildNonAUR:
     strategy:
-      PKG:
-        DEFAULT: [linux-tikogasa, aocc, linux-tikogasa-zen2, linux-tikogasa-zen3, zfs-utils-kogasa]
-        USEAUR: [ffmpeg-amd-full]
       matrix:
         PKGBUILDs: [linux-tikogasa, aocc, linux-tikogasa-zen2, linux-tikogasa-zen3, zfs-utils-kogasa, ffmpeg-amd-full]
 
@@ -62,13 +59,13 @@ jobs:
         id: makepkg
         uses: Pinghigh/pkgbuild-action@v4.2
         with:
-          pkgdir: ${{ PKG.DEFAULT }}
+          pkgdir: [linux-tikogasa, aocc, linux-tikogasa-zen2, linux-tikogasa-zen3, zfs-utils-kogasa]
           makepkgArgs: "-s --cleanbuild --skippgpcheck"
       - name: Build Non-AUR(with aurDep) packages
         id: makepkg_aur
         uses: Pinghigh/pkgbuild-action@v4.3
         with:
-          pkgdir: ${{ PKG.USEAUR }}
+          pkgdir: [ffmpeg-amd-full]
           makepkgArgs: "-s --cleanbuild --skippgpcheck"
           aurDeps: true
           
