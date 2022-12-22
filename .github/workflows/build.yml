@@ -64,7 +64,7 @@ jobs:
           pkgdir: ${{ matrix.DEFAULT }}
           makepkgArgs: "-s --cleanbuild --skippgpcheck"
       - name: Build Non-AUR(with aurDep) packages
-        id: makepkg
+        id: makepkg_aur
         uses: Pinghigh/pkgbuild-action@v4.3
         with:
           pkgdir: ${{ matrix.USEAUR }}
