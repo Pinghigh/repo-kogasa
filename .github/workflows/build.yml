@@ -46,7 +46,7 @@ jobs:
   buildNonAUR:
     strategy:
       matrix:
-        PKGBUILDs: [linux-tikogasa, aocc, linux-tikogasa-zen2, linux-tikogasa-zen3, zfs-utils-kogasa]
+        PKGBUILDs: [linux-tikogasa, aocc, linux-tikogasa-zen2, linux-tikogasa-zen3, zfs-utils-kogasa, ffmpeg-amd-full]
 
       fail-fast: false
       
@@ -61,6 +61,7 @@ jobs:
         with:
           pkgdir: ${{ matrix.PKGBUILDs }}
           makepkgArgs: "-s --cleanbuild --skippgpcheck"
+          aurDeps: true
           
       # - uses: actions/upload-artifact@v3
       #   with:
