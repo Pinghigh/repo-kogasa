@@ -207,7 +207,7 @@
     options=('!strip')
     _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
     makedepends=(bc libelf make pahole cpio perl patch tar zstd xz initramfs kmod python git)
-    BUILD_FLAGS="-j "
+    BUILD_FLAGS="-j4 "
     _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
     source=(
         "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
@@ -219,6 +219,7 @@
         "${_patchsource}/all/0001-cachyos-base-all.patch"
         "${_patchsource}/misc/0001-Add-latency-priority-for-CFS-class.patch"
         "${_patchsource}/sched/0001-bore-cachy.patch"
+        "${_patchsource}/misc/0001-bcachefs.patch"
         "${_patchsource}/misc/0001-bore-tuning-sysctl.patch"
     )
     ## ZFS Support
