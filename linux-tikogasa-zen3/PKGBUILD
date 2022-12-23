@@ -206,7 +206,7 @@
     license=('GPL2')
     options=('!strip')
     _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
-    makedepends=(bc libelf make pahole cpio perl patch tar xz zstd initramfs kmod)
+    makedepends=(bc libelf make pahole cpio perl patch tar xz zstd initramfs kmod git)
     BUILD_FLAGS="-j "
     _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
     source=(
