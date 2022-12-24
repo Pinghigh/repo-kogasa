@@ -253,8 +253,8 @@
     export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
     prepare() {
-        llvmpath=${srcdir}/aocc-compiler-4.0.0/bin/
-        BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1"
+        #llvmpath=${srcdir}/aocc-compiler-4.0.0/bin/
+        #BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1"
         cp clearlinux-linux/*.patch ./
         cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
         cd ${srcdir}/$_srcname

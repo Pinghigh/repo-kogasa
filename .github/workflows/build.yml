@@ -46,7 +46,7 @@ jobs:
   buildNonAUR:
     strategy:
       matrix:
-        PKGBUILDs: [linux-tikogasa-zen2, linux-tikogasa-zen3]
+        PKGBUILDs: [linux-tikogasa-zen2]
 
       fail-fast: false
       
