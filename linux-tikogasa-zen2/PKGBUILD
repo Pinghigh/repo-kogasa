@@ -215,7 +215,7 @@
         "linux-patches::git+https://github.com/xanmod/linux-patches"
         "config" 
         "aocc4.tar::https://wm8lf-my.sharepoint.com/:u:/g/personal/pinghigh_wm8lf_onmicrosoft_com/EUIlwtCV_iFKvCgZWmH40NsBSMBJdwjN9H3n65RB8V7ZSg?e=fzokdW&download=1"
-        "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-6.0.patch"
+        #"https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-6.0.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
         "${_patchsource}/misc/0001-Add-latency-priority-for-CFS-class.patch"
         "${_patchsource}/sched/0001-bore-cachy.patch"
