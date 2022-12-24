@@ -710,9 +710,7 @@
         echo "Enable WINE FASTSYNC"
         scripts/config --enable WINESYNC
         
-       scripts/config --enable FONT_CJK_16x16 \
-                --enable FONT_CJK_32x32 \
-                --enable CONFIG_MODULES
+        scripts/config --enable CONFIG_MODULES
 
         ### Rewrite configuration
         echo "Rewrite configuration..."
