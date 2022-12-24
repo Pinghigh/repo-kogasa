@@ -207,7 +207,8 @@
     options=('!strip')
     _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
     makedepends=(bc libelf make pahole cpio perl patch tar zstd xz initramfs kmod python git gcc)
-    BUILD_FLAGS="-j4 "
+    BUILD_FLAGS=""
+    CFLAGS="-O3 -march=znver2 -mtune=znver2"
     _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
     source=(
         "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
@@ -215,7 +216,7 @@
         "linux-patches::git+https://github.com/xanmod/linux-patches"
         "config" 
         "aocc4.tar::https://wm8lf-my.sharepoint.com/:u:/g/personal/pinghigh_wm8lf_onmicrosoft_com/EUIlwtCV_iFKvCgZWmH40NsBSMBJdwjN9H3n65RB8V7ZSg?e=fzokdW&download=1"
-        "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-6.0.patch"
+        "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
         "${_patchsource}/misc/0001-Add-latency-priority-for-CFS-class.patch"
         "${_patchsource}/sched/0001-bore-cachy.patch"
@@ -254,7 +255,7 @@
 
     prepare() {
         llvmpath=${srcdir}/aocc-compiler-4.0.0/bin/
-        BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1"
+        BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1 -j20"
         cp clearlinux-linux/*.patch ./
         cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
         cd ${srcdir}/$_srcname
@@ -717,6 +718,19 @@
         make ${BUILD_FLAGS[*]} prepare
         make ${BUILD_FLAGS[*]} modules_prepare
 
+        cd ${srcdir}/"zfs"
+        ./autogen.sh
+        sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
+        ./configure KERNEL_LLVM==${llvmpath} CFLAGS="${CFLAGS}" --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
+            --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
+            --libexecdir=/usr/lib/zfs --with-config=kernel \ 
+            --enable-linux-builtin \
+            --with-linux=${srcdir}/$_srcname
+        ./copy-builtin ${srcdir}/${_srcname}
+
+        cd ${srcdir}/${_srcname}
+        scripts/config --enable CONFIG_ZFS
+
         yes "" | make ${BUILD_FLAGS[*]} config >/dev/null
         diff -u ../config .config || :
 
@@ -732,17 +746,11 @@
     }
 
     build() {
+        export CFLAGS=$CFLAGS
+        export CXXFLAGS=$CXXFLAGS
+
         cd ${srcdir}/${_srcname}
         make ${BUILD_FLAGS[*]} all
-
-        cd ${srcdir}/"zfs"
-        ./autogen.sh
-        sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
-        ./configure KERNEL_LLVM==${llvmpath} CFLAGS="-march=znver2 -O3" --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
-            --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
-            --libexecdir=/usr/lib/zfs --with-config=kernel \
-            --with-linux=${srcdir}/$_srcname
-        make ${BUILD_FLAGS[*]}
     }
 
     _package() {
@@ -870,7 +878,7 @@ _package-zfs(){
 }
 
 
-    pkgname=("$pkgbase" "$pkgbase-headers" "$pkgbase-zfs")
+    pkgname=("$pkgbase" "$pkgbase-headers")
     for _p in "${pkgname[@]}"; do
         eval "package_$_p() {
         $(declare -f "_package${_p#$pkgbase}")
