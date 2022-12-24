@@ -723,7 +723,7 @@
         sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
         ./configure KERNEL_LLVM=${llvmpath} CFLAGS="${CFLAGS}" --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
             --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
-            --libexecdir=/usr/lib/zfs --with-config=kernel \ 
+            --libexecdir=/usr/lib/zfs --with-config=kernel \
             --enable-linux-builtin \
             --with-linux=${srcdir}/$_srcname
         ./copy-builtin ${srcdir}/${_srcname}
