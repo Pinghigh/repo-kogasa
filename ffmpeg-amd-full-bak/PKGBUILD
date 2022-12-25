@@ -3,7 +3,7 @@
 # Contributor: Marko Korhonen <reekymarko at reekynet.com>
 # Contributor: Bruno Filipe < gmail-com: bmilreu >
 
-pkgname=ffmpeg-amd-full
+pkgname=ffmpeg-amd-full-lto
 pkgver=5.1.2
 pkgrel=2
 pkgdesc='Complete solution to record, convert and stream audio and video (all possible features for AMD)'
