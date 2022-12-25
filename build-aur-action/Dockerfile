@@ -5,4 +5,6 @@ RUN date
 RUN pacman -Syu --noconfirm
 RUN pacman -S base-devel git --noconfirm
 COPY entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["bash ", "/entrypoint.sh"] 
+RUN dos2unix /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/bin/bash","/entrypoint.sh"] 
