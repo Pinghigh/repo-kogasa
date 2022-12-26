@@ -57,7 +57,7 @@ jobs:
 
       - name: Build Non-AUR packages
         id: makepkg
-        uses: Pinghigh/pkgbuild-action@1
+        uses: Pinghigh/pkgbuild-action@pre1
         with:
           pkgdir: ${{ matrix.PKGBUILDs }}
           
