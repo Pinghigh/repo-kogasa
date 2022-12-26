@@ -759,7 +759,7 @@
 
     _package() {
         pkgdesc="The $pkgdesc kernel and modules"
-        depends=('coreutils' 'kmod' 'initramfs')
+        depends=('coreutils' 'kmod' 'mkinitcpio')
         optdepends=('wireless-regdb: to set the correct wireless channels of your country'
                     'linux-firmware: firmware images needed for some devices'
                     'modprobed-db: Keeps track of EVERY kernel module that has ever been probed - useful for those of us who make localmodconfig'
@@ -788,7 +788,7 @@
 
     _package-headers() {
         pkgdesc="Headers and scripts for building modules for the $pkgdesc kernel"
-        depends=('pahole' linux-${pkgsuffix} )
+        depends=('pahole' linux-${pkgsuffix}-zen2 )
 
         cd ${srcdir}/${_srcname}
         local builddir="$pkgdir/usr/lib/modules/$(<version)/build"
@@ -870,16 +870,16 @@
         ln -sr "$builddir" "$pkgdir/usr/src/$pkgbase"
     }
 
-_package-zfs(){
-    pkgdesc="zfs module for the $pkgdesc kernel"
-    depends=('pahole' linux-$pkgsuffix=$_kernver)
+# _package-zfs(){
+#     pkgdesc="zfs module for the $pkgdesc kernel"
+#     depends=('pahole' linux-$pkgsuffix=$_kernver)
 
-    cd ${srcdir}/"zfs"
-    install -dm755 "$pkgdir/usr/lib/modules/${_kernver}-${pkgsuffix}"
-    install -m644 module/*/*.ko "$pkgdir/usr/lib/modules/${_kernver}-${pkgsuffix}"
-    find "$pkgdir" -name '*.ko' -exec zstd --rm -10 {} +
-    #  sed -i -e "s/EXTRAMODULES='.*'/EXTRAMODULES='${pkgver}-${pkgbase}'/" "$startdir/zfs.install"
-}
+#     cd ${srcdir}/"zfs"
+#     install -dm755 "$pkgdir/usr/lib/modules/${_kernver}-${pkgsuffix}"
+#     install -m644 module/*/*.ko "$pkgdir/usr/lib/modules/${_kernver}-${pkgsuffix}"
+#     find "$pkgdir" -name '*.ko' -exec zstd --rm -10 {} +
+#     #  sed -i -e "s/EXTRAMODULES='.*'/EXTRAMODULES='${pkgver}-${pkgbase}'/" "$startdir/zfs.install"
+# }
 
 
     pkgname=("$pkgbase" "$pkgbase-headers")
