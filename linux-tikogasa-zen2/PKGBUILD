@@ -546,6 +546,10 @@
              error "Enabling per-VMA locking failed!"
              exit
         fi
+        
+        echo "Enable THP always..."
+        scripts/config --disable TRANSPARENT_HUGEPAGE_MADVISE \
+            --enable TRANSPARENT_HUGEPAGE_ALWAYS
 
         ### Enable DAMON
         if [ -n "$_damon" ]; then
