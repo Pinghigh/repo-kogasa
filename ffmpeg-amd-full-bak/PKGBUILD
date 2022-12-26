@@ -49,7 +49,10 @@ sha256sums=('619e706d662c8420859832ddc259cd4d4096a48a2ce1eefd052db9e440eef3dc'
             '2df82046908015bf26bc1303275cf52ba01fa380029a54ea6415373e389e423c'
             'b1d68f626168f2409a4b0987acf5b208e7ced2ddab49b11990a10f458d377e9a'
             '9e4e290378028cd4474c36d3e3a25f77d4f40424dbd3115632e20c5734b50979')
-validpgpkeys=('FCF986EA15E6E293A5644F10B4322F04D67658D8')
+validpgpkeys=(
+    'FCF986EA15E6E293A5644F10B4322F04D67658D8'
+    'B4322F04D67658D8'
+)
 
 prepare() {
     rm -f "ffmpeg-${pkgver}/libavcodec/"libsvt_{hevc,vp9}.c
