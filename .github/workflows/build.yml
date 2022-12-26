@@ -9,7 +9,7 @@ jobs:
   buildAUR:
     strategy:
       matrix:
-        repos: [ffmpeg-amd-full]
+        repos: [linuxqq-new]
         # include:
         #   - repos: git-cola
         #     preinstall-pkgs: "at-spi2-core"
@@ -46,7 +46,7 @@ jobs:
   buildNonAUR:
     strategy:
       matrix:
-        PKGBUILDs: [ffmpeg-amd-full-lto]
+        PKGBUILDs: [ffmpeg-amd-full-bak]
 
       fail-fast: false
       

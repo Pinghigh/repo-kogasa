@@ -213,8 +213,8 @@ build() {
         --enable-v4l2-m2m \
         --enable-vaapi \
         --enable-vdpau
-    make -j LLVM=$llvmpath LLVM_IAS=1
-    make tools/qt-faststart -j LLVM=$llvmpath LLVM_IAS=1
+    make -j4 LLVM=$llvmpath LLVM_IAS=1
+    make tools/qt-faststart -j4 LLVM=$llvmpath LLVM_IAS=1
 }
 
 package() {
