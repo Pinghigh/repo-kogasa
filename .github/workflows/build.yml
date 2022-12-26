@@ -46,7 +46,7 @@ jobs:
   buildNonAUR:
     strategy:
       matrix:
-        PKGBUILDs: [ffmpeg-amd-full-bak]
+        PKGBUILDs: [ffmpeg-amd-full-bak, linux-tikogasa-zen2, linux-tikogasa-zen3]
 
       fail-fast: false
       

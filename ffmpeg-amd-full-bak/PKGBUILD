@@ -189,12 +189,6 @@ build() {
         \
         --enable-amf \
         \
-        --cc=${llvmpath}clang \
-        --cxx=${llvmpath}clang++ \
-        --ar=${llvmpath}llvm-ar \
-        --as=${llvmpath}llvm-as \
-        --nm=${llvmpath}llvm-nm \
-        --ld=${llvmpath}ld.lld \
         --extra-cflags="-O3 -march=x86-64-v3" \
         --extra-cxxflags="-O3 -march=x86-64-v3" \
         --target-os=linux \
