@@ -6,42 +6,42 @@ on:
   #   - cron:  '1 */8 * * *'
 
 jobs:
-  buildAUR:
-    strategy:
-      matrix:
-        repos: [linuxqq-new]
-        # include:
-        #   - repos: git-cola
-        #     preinstall-pkgs: "at-spi2-core"
-        #   - repos: realesrgan-ncnn-vulkan
-        #     preinstall-pkgs: "vulkan-intel"
-        #   - repos: python-octodns
-        #     preinstall-pkgs: "python-pip"
+  # buildAUR:
+  #   strategy:
+  #     matrix:
+  #       repos: [linuxqq-new]
+  #       # include:
+  #       #   - repos: git-cola
+  #       #     preinstall-pkgs: "at-spi2-core"
+  #       #   - repos: realesrgan-ncnn-vulkan
+  #       #     preinstall-pkgs: "vulkan-intel"
+  #       #   - repos: python-octodns
+  #       #     preinstall-pkgs: "python-pip"
 
-      fail-fast: false
+  #     fail-fast: false
       
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
     
-    steps:
-    - uses: actions/checkout@v3
+  #   steps:
+  #   - uses: actions/checkout@v3
     
-    - uses: ./build-aur-action
-      with:
-        repo-name: ${{ matrix.repos }}
-        preinstallPkgs: ${{ matrix.preinstall-pkgs }}
+  #   - uses: ./build-aur-action
+  #     with:
+  #       repo-name: ${{ matrix.repos }}
+  #       preinstallPkgs: ${{ matrix.preinstall-pkgs }}
     
-    - uses: actions/upload-artifact@v3
-      with:
-        path: ./*/*.pkg.tar.zst
-        name: ${{ matrix.repos }}
-        if-no-files-found: error
+  #   - uses: actions/upload-artifact@v3
+  #     with:
+  #       path: ./*/*.pkg.tar.zst
+  #       name: ${{ matrix.repos }}
+  #       if-no-files-found: error
         
-    # - uses: ncipollo/release-action@v1
-    #   with:
-    #     allowUpdates: true
-    #     tag: "packages"
-    #     artifacts: "./*/*.zst"
-    #     token: ${{ secrets.GITHUB_TOKEN }}
+  #   # - uses: ncipollo/release-action@v1
+  #   #   with:
+  #   #     allowUpdates: true
+  #   #     tag: "packages"
+  #   #     artifacts: "./*/*.zst"
+  #   #     token: ${{ secrets.GITHUB_TOKEN }}
 
   buildNonAUR:
     strategy:
@@ -57,11 +57,9 @@ jobs:
 
       - name: Build Non-AUR packages
         id: makepkg
-        uses: Pinghigh/pkgbuild-action@v4.2
+        uses: Pinghigh/pkgbuild-action@1
         with:
           pkgdir: ${{ matrix.PKGBUILDs }}
-          makepkgArgs: "-s --cleanbuild --skippgpcheck"
-          aurDeps: true
           
       - uses: actions/upload-artifact@v3
         with:
@@ -80,7 +78,7 @@ jobs:
   uploadToOneDrive:      
     runs-on: ubuntu-latest
     if: always()
-    needs: [buildAUR, buildNonAUR]
+    needs: [buildNonAUR]
     # needs: [buildNonAUR]
 
     steps:
