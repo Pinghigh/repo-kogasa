@@ -216,7 +216,7 @@
         "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
         "linux-patches::git+https://github.com/xanmod/linux-patches"
         "config" 
-        "https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/clang+llvm-14.0.6-powerpc64le-linux-ubuntu-18.04.5.tar.xz"
+        "https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
         "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
         "${_patchsource}/misc/0001-Add-latency-priority-for-CFS-class.patch"
