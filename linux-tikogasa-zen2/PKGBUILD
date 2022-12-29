@@ -206,9 +206,9 @@
     license=('GPL2')
     options=('!strip')
     _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
-    makedepends=(bc libelf make pahole cpio perl patch tar zstd xz initramfs kmod python git gcc)
+    makedepends=(bc libelf make pahole cpio perl patch tar zstd xz initramfs kmod python git musl)
     BUILD_FLAGS=""
-    CFLAGS="-O3 -march=znver2 -mtune=znver2"
+    CFLAGS="-O3 -march=znver2 -mtune=znver2 -I/usr/lib/musl/include -L/usr/lib/musl/lib /usr/lib/musl/lib/crt1.o /usr/lib/musl/lib/x86_64-linux-musl/crti.o /usr/lib/musl/lib/crtn.o "
     _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
     source=(
         "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
