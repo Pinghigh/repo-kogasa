@@ -208,7 +208,7 @@
     _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
     makedepends=(bc libelf make pahole cpio perl patch tar zstd xz initramfs kmod python git musl)
     BUILD_FLAGS=""
-    CFLAGS="-O3 -march=znver2 -mtune=znver2 -I/usr/lib/musl/include -L/usr/lib/musl/lib /usr/lib/musl/lib/crt1.o /usr/lib/musl/lib/x86_64-linux-musl/crti.o /usr/lib/musl/lib/crtn.o "
+    CFLAGS="-O3 -march=znver2 -mtune=znver2"
     _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
     source=(
         "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
@@ -255,7 +255,7 @@
 
     prepare() {
         llvmpath=${srcdir}/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/bin/
-        BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1 -j4"
+        BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1 CC=musl-clang -j4"
         cp clearlinux-linux/*.patch ./
         cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
         cd ${srcdir}/$_srcname
@@ -725,7 +725,7 @@
         cd ${srcdir}/"zfs"
         ./autogen.sh
         sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
-        ./configure KERNEL_LLVM=${llvmpath} CFLAGS="${CFLAGS}" --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
+        ./configure KERNEL_LLVM=${llvmpath} CFLAGS="${CFLAGS}" CC=musl-clang --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
             --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
             --libexecdir=/usr/lib/zfs --with-config=kernel \
             --enable-linux-builtin \
