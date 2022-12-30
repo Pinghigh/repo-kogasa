@@ -1,5 +1,5 @@
 name: Makepkg Build and Check
-author: Eric Langlois
+author: PingHigh
 description: Build and check a PKGBUILD package
 branding:
   color: blue
@@ -9,10 +9,6 @@ inputs:
     description: "Relative path to directory containing the PKGBUILD file."
     required: false
     default: "."
-  aurDeps:
-    description: "Support AUR dependencies if nonempty."
-    required: false
-    default: ""
   namcapDisable:
     description: "Disable namcap checks if nonempty."
     required: false

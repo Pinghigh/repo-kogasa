@@ -4,17 +4,9 @@ set -euo pipefail
 FILE="$(basename "$0")"
 
 # Enable the multilib repository
-cat << EOM >> /etc/pacman.conf
-[multilib]
-Include = /etc/pacman.d/mirrorlist
-[archlinuxcn]
-Server = https://repo.archlinuxcn.org/x86_64
-EOM
-
-pacman-key --init
-pacman -Sy --noconfirm && pacman -S --noconfirm archlinuxcn-keyring
-pacman -Syu --noconfirm --needed base-devel yay
-
+echo -e '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n\n[archlinuxcn]\nServer = https://mirrors.xtom.us/archlinuxcn/$arch\nServer = https://mirrors.ocf.berkeley.edu/archlinuxcn/$arch\nServer = https://mirrors.aliyun.com/archlinuxcn/$arch\nSigLevel = Never\n\n[cachyos]\nServer = https://mirror.cachyos.org/repo/x86_64/$repo\nSigLevel = Never' | tee -a /etc/pacman.conf
+pacman -Syu --noconfirm --needed base-devel
+sudo pacman -Sy && sudo pacman -S pacman-contrib --noconfirm
 # Makepkg does not allow running as root
 # Create a new user `builder`
 # `builder` needs to have a home directory because some PKGBUILDs will try to
@@ -23,63 +15,26 @@ useradd builder -m
 # When installing dependencies, makepkg will use sudo
 # Give user `builder` passwordless sudo access
 echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-mkdir /home/builder/.config/
-mkdir /home/builder/.config/pacman/
-install -D /etc/makepkg.conf /home/builder/.config/pacman/makepkg.conf
-sed -i "s|-march=x86-64 -mtune=generic|-march=znver2 -mtune=znver2|g" /home/builder/.config/pacman/makepkg.conf
-sed -i "s|-O2|-O3|g" /home/builder/.config/pacman/makepkg.conf
+
 # Give all users (particularly builder) full access to these files
 chmod -R a+rw .
 
 BASEDIR="$PWD"
-echo "BASEDIR: $BASEDIR"
 cd "${INPUT_PKGDIR:-.}"
 
-# Just generate .SRCINFO
-if ! [ -f .SRCINFO ]; then
-	sudo -u builder makepkg  --printsrcinfo > .SRCINFO
-fi
-
-function recursive_build () {
-	for d in *; do
-		if [ -d "$d" ]; then
-			(cd -- "$d" && recursive_build)
-		fi
-	done
-	
-	sudo -u builder makepkg --printsrcinfo > .SRCINFO
-	mapfile -t OTHERPKGDEPS < \
-		<(sed -n -e 's/^[[:space:]]*\(make\)\?depends\(_x86_64\)\? = \([[:alnum:][:punct:]]*\)[[:space:]]*$/\3/p' .SRCINFO)
-	sudo -H -u builder yay --sync --noconfirm --needed --builddir="$BASEDIR" "${OTHERPKGDEPS[@]}"
-	
-	sudo -H -u builder makepkg --install --noconfirm
-	[ -d "$BASEDIR/local/" ] || mkdir "$BASEDIR/local/"
-	cp ./*.pkg.tar.zst "$BASEDIR/local/"
-}
-
-# Optionally install dependencies from AUR
-if [ -n "${INPUT_AURDEPS:-}" ]; then
-	# Extract dependencies from .SRCINFO (depends or depends_x86_64) and install
-	mapfile -t PKGDEPS < \
-		<(sed -n -e 's/^[[:space:]]*\(make\)\?depends\(_x86_64\)\? = \([[:alnum:][:punct:]]*\)[[:space:]]*$/\3/p' .SRCINFO)
-	
-	# If package have dependencies from AUR and we want to use our PKGBUILD of these dependencies
-	CURDIR="$PWD"
-	for d in *; do
-		if [ -d "$d" ]; then
-			(cd -- "$d" && recursive_build)
-		fi
-	done
-	cd "$CURDIR"
-	
-	sudo -H -u builder yay --sync --noconfirm --needed --builddir="$BASEDIR" "${PKGDEPS[@]}"
-fi
+# Make the builder user the owner of these files
+# Without this, (e.g. only having every user have read/write access to the files),
+# makepkg will try to change the permissions of the files itself which will fail since it does not own the files/have permission
+# we can't do this earlier as it will change files that are for github actions, which results in warnings in github actions logs.
+chown -R builder .
 
 # Build packages
 # INPUT_MAKEPKGARGS is intentionally unquoted to allow arg splitting
 # shellcheck disable=SC2086
-sudo -H -u builder makepkg --skipchecksums --cleanbuild --skippgpcheck --syncdeps --noconfirm ${INPUT_MAKEPKGARGS:-}
+pacman -S --noconfirm --needed paru
+sudo -H -u builder updpkgsums
 
+sudo -H -u builder paru -U --noconfirm --mflags "${INPUT_MAKEPKGARGS:-}"
 # Get array of packages to be built
 mapfile -t PKGFILES < <( sudo -u builder makepkg --packagelist )
 echo "Package(s): ${PKGFILES[*]}"
