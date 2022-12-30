@@ -1,5 +1,5 @@
 #!/bin/sh
-cc="${llvmpath}/clang"
+cc="$llvmpath/clang"
 libc="/usr/lib/musl"
 libc_inc="/usr/lib/musl/include"
 libc_lib="/usr/lib/musl/lib"
