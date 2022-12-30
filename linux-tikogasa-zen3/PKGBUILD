@@ -206,15 +206,18 @@
     license=('GPL2')
     options=('!strip')
     _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
-    makedepends=(bc libelf make pahole cpio perl patch tar xz zstd initramfs kmod git gcc)
+    makedepends=(bc libelf make pahole cpio perl patch tar zstd xz initramfs kmod python git musl gcc)
     BUILD_FLAGS=""
     CFLAGS="-O3 -march=znver3 -mtune=znver3"
     _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
     source=(
+        "clang"
+        "ld.lld"
         "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
         "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
         "linux-patches::git+https://github.com/xanmod/linux-patches"
         "config" 
+        "test.c"
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
         "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
@@ -254,8 +257,10 @@
     export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
     prepare() {
-        llvmpath=${srcdir}/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/bin/
-        BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1 -j4"
+        export llvmpath=$srcdir/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/bin/
+        export PATH=$llvmpath:$PATH
+        BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1 CC=${srcdir}/clang LD=${srcdir}/ld.lld  -j4"
+        ${srcdir}/clang ${srcdir}/test.c -o ${srcdir}/test.out
         cp clearlinux-linux/*.patch ./
         cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
         cd ${srcdir}/$_srcname
@@ -396,14 +401,8 @@
         fi
 
         ### Setting NR_CPUS
-        if [ -n "$_nr_cpus" ]; then
-            echo "Setting custom NR_CPUS..."
-            scripts/config --set-val NR_CPUS "$_nr_cpus"
-        else
-            echo "Setting default NR_CPUS..."
-            scripts/config --set-val NR_CPUS 128
-        fi
-
+        echo "Setting default NR_CPUS..."
+        scripts/config --set-val NR_CPUS 320
         ### Select performance governor
         if [ -n "$_per_gov" ]; then
             echo "Setting performance governor..."
@@ -525,28 +524,10 @@
              exit
         fi
 
-        ### Select VMA config
-        if [ "$_vma_config" = "standard" ]; then
-           echo "Enabling per-VMA locking..."
+        echo "Enabling per-VMA locking..."
            scripts/config --enable PER_VMA_LOCK \
                --disable PER_VMA_LOCK_STATS
-        elif [ "$_vma_config" = "stats" ]; then
-           echo "Enabling per-VMA locking with stats..."
-           scripts/config --enable PER_VMA_LOCK \
-               --enable PER_VMA_LOCK_STATS
-        elif [ "$_vma_config" = "none" ]; then
-           echo "Disabling per-VMA locking..."
-           scripts/config --disable PER_VMA_LOCK
-        else
-            if [ -n "$_vma_config" ]; then
-               error "The value $_vma_config is invalid. Choose the correct one again."
-            else
-               error "The value is empty. Choose the correct one again."
-            fi
-             error "Enabling per-VMA locking failed!"
-             exit
-        fi
-
+        
         echo "Enable THP always..."
         scripts/config --disable TRANSPARENT_HUGEPAGE_MADVISE \
             --enable TRANSPARENT_HUGEPAGE_ALWAYS
@@ -725,7 +706,7 @@
         cd ${srcdir}/"zfs"
         ./autogen.sh
         sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
-        ./configure KERNEL_LLVM=${llvmpath} CFLAGS="${CFLAGS}" --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
+        ./configure KERNEL_LLVM=${llvmpath} CFLAGS="${CFLAGS}" CC=${srcdir}/clang LD=${srcdir}/ld.lld --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
             --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
             --libexecdir=/usr/lib/zfs --with-config=kernel \
             --enable-linux-builtin \
@@ -734,7 +715,6 @@
 
         cd ${srcdir}/${_srcname}
         scripts/config --enable CONFIG_ZFS
-
 
         yes "" | make ${BUILD_FLAGS[*]} config >/dev/null
         diff -u ../config .config || :
@@ -752,7 +732,7 @@
 
     build() {
         export CFLAGS=$CFLAGS
-        export CXXFLAGS=$CFLAGS
+        export CXXFLAGS="${CFLAGS} -stdlib=libc++"
 
         cd ${srcdir}/${_srcname}
         make ${BUILD_FLAGS[*]} all
