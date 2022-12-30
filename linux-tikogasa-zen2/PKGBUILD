@@ -216,6 +216,7 @@
         "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
         "linux-patches::git+https://github.com/xanmod/linux-patches"
         "config" 
+        "test.c"
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
         "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
@@ -258,6 +259,7 @@
         export llvmpath=${srcdir}/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/bin/
         BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1 CC=${srcdir}/clang -j4"
         sed -i "s|sedwithpath|$llvmpath|g"  ${srcdir}/clang
+        ${srcdir}/clang ${srcdir}/test.c -o ${srcdir}/test.out
         cp clearlinux-linux/*.patch ./
         cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
         cd ${srcdir}/$_srcname
