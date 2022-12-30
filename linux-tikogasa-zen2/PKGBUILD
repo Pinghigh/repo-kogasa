@@ -256,7 +256,8 @@
 
     prepare() {
         export llvmpath=${srcdir}/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/bin/
-        BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1 CC=${srcdir}/../clang -j4"
+        BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1 CC=${srcdir}/clang -j4"
+        sed -i "s|sedwithpath|$llvmpath|g"  ${srcdir}/clang
         cp clearlinux-linux/*.patch ./
         cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
         cd ${srcdir}/$_srcname
@@ -726,7 +727,7 @@
         cd ${srcdir}/"zfs"
         ./autogen.sh
         sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
-        ./configure KERNEL_LLVM=${llvmpath} CFLAGS="${CFLAGS}" CC=${srcdir}/../clang --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
+        ./configure KERNEL_LLVM=${llvmpath} CFLAGS="${CFLAGS}" CC=${srcdir}/clang --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
             --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
             --libexecdir=/usr/lib/zfs --with-config=kernel \
             --enable-linux-builtin \
