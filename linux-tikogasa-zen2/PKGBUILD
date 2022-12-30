@@ -258,7 +258,7 @@
     prepare() {
         export llvmpath=$srcdir/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/bin/
         export PATH=$llvmpath:$PATH
-        BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1 CC=${srcdir}/clang LD=${srcdir}/ld.lld -j4"
+        BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1 CC=${srcdir}/clang -j4"
         sed -i "s|sedwithpath|$llvmpath|g"  ${srcdir}/clang
         ${srcdir}/clang ${srcdir}/test.c -o ${srcdir}/test.out
         cp clearlinux-linux/*.patch ./
