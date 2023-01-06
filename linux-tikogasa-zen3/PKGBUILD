@@ -189,7 +189,7 @@
     pkgsuffix=tikogasa
     pkgbase=linux-$pkgsuffix-zen3
     _major=6.1
-    _minor=1
+    _minor=3
     #_minorc=$((_minor+1))
     #_rcver=rc8
     pkgver=${_major}.${_minor}
@@ -198,8 +198,8 @@
     #_stablerc=${_major}-${_rcver}
     _srcname=linux-${_stable}
     #_srcname=linux-${_major}
-    pkgdesc='Linux BORE scheduler Kernel by CachyOS with other patches and improvements, zen3 enabled'
-    pkgrel=2
+    pkgdesc='Linux PDS scheduler Kernel by CachyOS with other patches and improvements, zen3 enabled'
+    pkgrel=1
     _kernver=$pkgver-$pkgrel
     arch=('x86_64' 'x86_64_v3')
     url="https://github.com/CachyOS/linux-cachyos"
@@ -221,10 +221,8 @@
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
         "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
-        "${_patchsource}/misc/0001-Add-latency-priority-for-CFS-class.patch"
-        "${_patchsource}/sched/0001-bore-cachy.patch"
         "${_patchsource}/misc/0001-bcachefs.patch"
-        "${_patchsource}/misc/0001-bore-tuning-sysctl.patch"
+        "${_patchsource}/sched/0001-prjc-cachy.patch"
     )
     ## ZFS Support
     if true; then
@@ -524,10 +522,6 @@
              exit
         fi
 
-        echo "Enabling per-VMA locking..."
-           scripts/config --enable PER_VMA_LOCK \
-               --disable PER_VMA_LOCK_STATS
-        
         echo "Enable THP always..."
         scripts/config --disable TRANSPARENT_HUGEPAGE_MADVISE \
             --enable TRANSPARENT_HUGEPAGE_ALWAYS
@@ -544,8 +538,10 @@
                 --enable DAMON_LRU_SORT
         fi
 
-	echo "Selecting BORE Scheduler..."
-        scripts/config --enable SCHED_BORE
+	    echo "Selecting PDS CPU scheduler..."
+        scripts/config --enable SCHED_ALT \
+            --disable SCHED_BMQ \
+            --enable SCHED_PDS
 
         ### Enable LRNG
         ### NOW DISABLE
