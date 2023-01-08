@@ -207,11 +207,12 @@
     options=('!strip')
     _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
     makedepends=(bc libelf pahole cpio perl tar zstd xz initramfs kmod python git llvm-git make patch musl)
-    BUILD_FLAGS=" "
+  
     libc="/usr/lib/musl"
     libc_inc="/usr/lib/musl/include"
     libc_lib="/usr/lib/musl/lib"
     CFLAGS="-O3 -march=znver2 -mtune=znver2 -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-num-threads=36 -mllvm -polly-scheduling=dynamic -mllvm -polly-scheduling-chunksize=1 -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -fuse-ld=musl-clang -static-libgcc -nostdinc --sysroot $libc -isystem $libc_inc -L-user-start -L $libc_lib -L-user-end"
+    BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld -j4"
     _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
     source=(
         #"clang"
@@ -260,10 +261,6 @@
     export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
     prepare() {
-        #export llvmpath=$srcdir/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/bin/
-        llvmpath=1
-	    export PATH=$llvmpath:$PATH
-        BUILD_FLAGS+="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld -j4"
         clang ${srcdir}/test.c $CFLAGS -o ${srcdir}/test.out
         cp clearlinux-linux/*.patch ./
         cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
