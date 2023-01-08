@@ -75,7 +75,7 @@
 
     ## Choose between perodic, idle or full
     ### Full tickless can give higher performances in various cases but, depending on hardware, lower consistency.
-    _tickrate=${_tickrate-full}
+    _tickrate=${_tickrate-idle}
 
     ## Choose between full(low-latency), voluntary or server
     _preempt=${_preempt-full}
