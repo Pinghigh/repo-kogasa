@@ -263,7 +263,7 @@
         #export llvmpath=$srcdir/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/bin/
         llvmpath=1
 	export PATH=$llvmpath:$PATH
-        BUILD_FLAGS+="LLVM=1 LLVM_IAS=1 -j4"
+        BUILD_FLAGS+="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld -j4"
         clang ${srcdir}/test.c $CFLAGS -o ${srcdir}/test.out
         cp clearlinux-linux/*.patch ./
         cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
