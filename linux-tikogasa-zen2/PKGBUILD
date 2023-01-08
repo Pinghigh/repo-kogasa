@@ -206,7 +206,7 @@
     license=('GPL2')
     options=('!strip')
     _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
-    makedepends=(bc libelf pahole cpio perl tar zstd xz initramfs kmod python git llvm-git make gcc patch musl)
+    makedepends=(bc libelf pahole cpio perl tar zstd xz initramfs kmod python git llvm-git make patch musl)
     BUILD_FLAGS=" "
     libc="/usr/lib/musl"
     libc_inc="/usr/lib/musl/include"
@@ -262,7 +262,7 @@
     prepare() {
         #export llvmpath=$srcdir/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/bin/
         llvmpath=1
-	export PATH=$llvmpath:$PATH
+	    export PATH=$llvmpath:$PATH
         BUILD_FLAGS+="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld -j4"
         clang ${srcdir}/test.c $CFLAGS -o ${srcdir}/test.out
         cp clearlinux-linux/*.patch ./
@@ -736,6 +736,9 @@
     build() {
         export CFLAGS=$CFLAGS
         export CXXFLAGS="${CFLAGS} -stdlib=libc++"
+        export CC=clang
+        export CXX=clang++
+        export LD=ld.lld
 
         cd ${srcdir}/${_srcname}
         make ${BUILD_FLAGS[*]} all
