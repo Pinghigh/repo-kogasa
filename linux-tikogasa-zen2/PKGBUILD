@@ -206,7 +206,7 @@
     license=('GPL2')
     options=('!strip')
     _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
-    makedepends=(bc libelf pahole cpio perl tar zstd xz initramfs kmod python git llvm-git base-devel musl)
+    makedepends=(bc libelf pahole cpio perl tar zstd xz initramfs kmod python git llvm-git make gcc patch musl)
     BUILD_FLAGS=" "
     libc="/usr/lib/musl"
     libc_inc="/usr/lib/musl/include"
