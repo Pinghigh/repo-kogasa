@@ -206,23 +206,27 @@
     license=('GPL2')
     options=('!strip')
     _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
-    makedepends=(bc libelf make pahole cpio perl patch tar zstd xz initramfs kmod python git musl gcc)
-    BUILD_FLAGS=""
-    CFLAGS="-O3 -march=znver2 -mtune=znver2"
+    makedepends=(bc libelf pahole cpio perl tar zstd xz initramfs kmod python git llvm-git base-devel musl)
+    BUILD_FLAGS=" "
+    libc="/usr/lib/musl"
+    libc_inc="/usr/lib/musl/include"
+    libc_lib="/usr/lib/musl/lib"
+    CFLAGS="-O3 -march=znver2 -mtune=znver2 -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-num-threads=36 -mllvm -polly-scheduling=dynamic -mllvm -polly-scheduling-chunksize=1 -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -fuse-ld=musl-clang -static-libgcc -nostdinc --sysroot $libc -isystem $libc_inc -L-user-start -L $libc_lib -L-user-end"
     _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
     source=(
-        "clang"
-        "ld.lld"
+        #"clang"
+        #"ld.lld"
         "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
         "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
         "linux-patches::git+https://github.com/xanmod/linux-patches"
         "config" 
         "test.c"
-        "https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
+        #"https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
         "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
         "${_patchsource}/misc/0001-bcachefs.patch"
         "${_patchsource}/sched/0001-prjc-cachy.patch"
+	#"${_patchsource}/misc/0001-lrng.patch"
     )
     ## ZFS Support
     if true; then
@@ -255,10 +259,11 @@
     export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
     prepare() {
-        export llvmpath=$srcdir/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/bin/
-        export PATH=$llvmpath:$PATH
-        BUILD_FLAGS+="LLVM=${llvmpath} LLVM_IAS=1 CC=${srcdir}/clang LD=${srcdir}/ld.lld  -j4"
-        ${srcdir}/clang ${srcdir}/test.c -o ${srcdir}/test.out
+        #export llvmpath=$srcdir/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04/bin/
+        llvmpath=1
+	export PATH=$llvmpath:$PATH
+        BUILD_FLAGS+="LLVM=1 LLVM_IAS=1 -j4"
+        clang ${srcdir}/test.c $CFLAGS -o ${srcdir}/test.out
         cp clearlinux-linux/*.patch ./
         cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
         cd ${srcdir}/$_srcname
@@ -382,7 +387,7 @@
         fi
 
         ### Disable NUMA
-        if true; then
+        if false; then
             echo "Disabling NUMA from kernel config..."
             scripts/config --disable NUMA \
                 --disable AMD_NUMA \
@@ -399,8 +404,8 @@
         fi
 
         ### Setting NR_CPUS
-        echo "Setting default NR_CPUS..."
-        scripts/config --set-val NR_CPUS 320
+        echo "Setting NR_CPUS 32..."
+        scripts/config --set-val NR_CPUS 32
         ### Select performance governor
         if [ -n "$_per_gov" ]; then
             echo "Setting performance governor..."
@@ -544,8 +549,7 @@
             --enable SCHED_PDS
 
         ### Enable LRNG
-        ### NOW DISABLE
-        if false; then
+        if true; then
             echo "Enabling Linux Random Number Generator ..."
             scripts/config --disable RANDOM_DEFAULT_IMPL \
                 --enable LRNG \
@@ -702,7 +706,7 @@
         cd ${srcdir}/"zfs"
         ./autogen.sh
         sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
-        ./configure KERNEL_LLVM=${llvmpath} CFLAGS="${CFLAGS}" CC=${srcdir}/clang LD=${srcdir}/ld.lld --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
+        ./configure KERNEL_LLVM=1 CFLAGS="${CFLAGS}" CC=clang LD=ld.lld --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
             --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
             --libexecdir=/usr/lib/zfs --with-config=kernel \
             --enable-linux-builtin \
@@ -718,6 +722,8 @@
         ### Prepared version
         make ${BUILD_FLAGS[*]} -s kernelrelease > version
         echo "Prepared $pkgbase version $(<version)"
+
+	#make ${BUILD_FLAGS[*]} menuconfig
 
 
         ### Save configuration for later reuse

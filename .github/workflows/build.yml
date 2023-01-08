@@ -46,7 +46,7 @@ jobs:
   buildNonAUR:
     strategy:
       matrix:
-        PKGBUILDs: [linux-tikogasa-zen2, linux-tikogasa-zen3]
+        PKGBUILDs: [linux-tikogasa-zen2]
 
       fail-fast: false
       
@@ -57,7 +57,7 @@ jobs:
 
       - name: Build Non-AUR packages
         id: makepkg
-        uses: Pinghigh/pkgbuild-action@pre2
+        uses: Pinghigh/pkgbuild-action@v5
         with:
           pkgdir: ${{ matrix.PKGBUILDs }}
           makepkgArgs: --skippgpcheck
