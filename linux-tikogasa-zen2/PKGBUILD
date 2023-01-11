@@ -729,7 +729,7 @@
         export LD=ld.lld
 
         cd ${srcdir}/${_srcname}
-        make ${BUILD_FLAGS[*]} all
+        make ${BUILD_FLAGS[*]} --debug=b crypto
     }
 
     _package() {
