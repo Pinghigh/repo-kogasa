@@ -695,8 +695,8 @@
 
         ### Rewrite configuration
         echo "Rewrite configuration..."
-        make ${BUILD_FLAGS[*]} prepare CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS
-        make ${BUILD_FLAGS[*]} modules_prepare CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS
+        make ${BUILD_FLAGS[*]} prepare CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS"
+        make ${BUILD_FLAGS[*]} modules_prepare CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS"
 
         cd ${srcdir}/"zfs"
         ./autogen.sh
