@@ -252,6 +252,12 @@
     export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
     prepare() {
+        export CFLAGS=$CFLAGS
+        export CXXFLAGS="${CFLAGS} -stdlib=libc++"
+        export CC=clang
+        export CXX=clang++
+        export LD=ld.lld
+
         clang ${srcdir}/test.c $CFLAGS -o ${srcdir}/test.out
         cp clearlinux-linux/*.patch ./
         cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
@@ -689,8 +695,8 @@
 
         ### Rewrite configuration
         echo "Rewrite configuration..."
-        make ${BUILD_FLAGS[*]} prepare
-        make ${BUILD_FLAGS[*]} modules_prepare
+        make ${BUILD_FLAGS[*]} prepare CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS
+        make ${BUILD_FLAGS[*]} modules_prepare CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS
 
         cd ${srcdir}/"zfs"
         ./autogen.sh
