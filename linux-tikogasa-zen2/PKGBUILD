@@ -233,25 +233,12 @@
     if true; then
         source+=("git+https://github.com/cachyos/zfs.git#commit=0b8e7ba7fb84953690e43b2aea238210d7368aa4")
     fi
-    ## Latency NICE Support
-    if [ -n "$_latency_nice" ]; then
-        if [[ "$_cpusched" = "bore"  || "$_cpusched" = "cfs" || "$_cpusched" = "hardened" ]]; then
-             source+=("${_patchsource}/misc/0001-Add-latency-priority-for-CFS-class.patch")
-        fi
-    fi
-
-    ## NEST Support
-    #if [ -n "$_nest" ]; then
-    #    if [[ "$_cpusched" = "bore"  || "$_cpusched" = "cfs" || "$_cpusched" = #"hardened" ]]; then
-    #         source+=("${_patchsource}/sched/0001-NEST.patch")
-    #    fi
-    #fi
     export KBUILD_BUILD_HOST=cleararch
     export KBUILD_BUILD_USER=$pkgbase
     export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
     prepare() {
-        clang ${srcdir}/test.c -O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-num-threads=36 -mllvm -polly-scheduling=dynamic -mllvm -polly-scheduling-chunksize=1 -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -fuse-ld=musl-clang -static-libgcc -nostdinc --sysroot $libc -isystem $libc_inc -L-user-start -L $libc_lib -L-user-end --std=gnu18 -o ${srcdir}/test.out
+        clang ${srcdir}/test.c -O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-num-threads=36 -mllvm -polly-scheduling=dynamic -mllvm -polly-scheduling-chunksize=1 -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none --std=gnu18 -o ${srcdir}/test.out
         cp clearlinux-linux/*.patch ./
         cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
         cd ${srcdir}/$_srcname
@@ -271,63 +258,29 @@
         done
 
         echo "Setting config..."
-        if [ -n "$_rtkernel" ]; then
-            cp ../config-rt .config
-        else
-            cp ../config .config
-        fi
+        cp ../config .config
 
         ### Select CPU optimization
-        if true; then
-            MARCH=$(echo $_processor_opt|tr '[:lower:]' '[:upper:]'&&echo)
-            MARCH2=MZEN2
-            scripts/config -k -d CONFIG_GENERIC_CPU
-            scripts/config -k -e CONFIG_${MARCH2}
-        fi
+        MARCH=$(echo $_processor_opt|tr '[:lower:]' '[:upper:]'&&echo)
+        MARCH2=MZEN2
+        scripts/config -k -d CONFIG_GENERIC_CPU
+        scripts/config -k -e CONFIG_${MARCH2}
 
         ### Selecting CachyOS config
-        if [ "$_cachy_config" = "yes" ]; then
-            echo "Enabling CachyOS config..."
-            scripts/config -e CACHY
-        elif [ "$_cachy_config" = "no" ]; then
-           echo "Disabling CachyOS config..."
-           scripts/config -d CACHY
-        else
-           if [ -n "$_cachy_config" ]; then
-               error "The value $_cachy_config is invalid. Choose the correct one again."
-           else
-               error "The value is empty. Choose the correct one again."
-           fi
-           error "Selecting CachyOS config failed!"
-           exit
-        fi
+        echo "Enabling CachyOS config..."
+        scripts/config -e CACHY
 
         ### Select LLVM level
-        if true; then
-            echo "Enabling LLVM THIN LTO..."
-            scripts/config -e LTO \
-                -e LTO_CLANG \
-                -e ARCH_SUPPORTS_LTO_CLANG \
-                -e ARCH_SUPPORTS_LTO_CLANG_THIN \
-                -d LTO_NONE \
-                -e HAS_LTO_CLANG \
-                -d LTO_CLANG_FULL \
-                -e LTO_CLANG_THIN \
-                -e HAVE_GCC_PLUGINS
-        elif [ "$_use_llvm_lto" = "full" ]; then
-            echo "Enabling LLVM FULL LTO..."
-            scripts/config -e LTO \
-                -e LTO_CLANG \
-                -e ARCH_SUPPORTS_LTO_CLANG \
-                -e ARCH_SUPPORTS_LTO_CLANG_THIN \
-                -d LTO_NONE \
-                -e HAS_LTO_CLANG \
-                -e LTO_CLANG_FULL \
-                -d LTO_CLANG_THIN \
-                -e HAVE_GCC_PLUGINS
-        else
-            scripts/config -e LTO_NONE
-        fi
+        echo "Enabling LLVM THIN LTO..."
+        scripts/config -e LTO \
+            -e LTO_CLANG \
+            -e ARCH_SUPPORTS_LTO_CLANG \
+            -e ARCH_SUPPORTS_LTO_CLANG_THIN \
+            -d LTO_NONE \
+            -e HAS_LTO_CLANG \
+            -d LTO_CLANG_FULL \
+            -e LTO_CLANG_THIN \
+            -e HAVE_GCC_PLUGINS
 
         ### Select tick rate
         if true; then
@@ -475,11 +428,9 @@
         fi
 
         ### Enable O3
-        if true; then
-            echo "Enabling KBUILD_CFLAGS -O3..."
-            scripts/config -d CC_OPTIMIZE_FOR_PERFORMANCE \
-                -e CC_OPTIMIZE_FOR_PERFORMANCE_O3
-        fi
+        echo "Enabling KBUILD_CFLAGS -O3..."
+        scripts/config -d CC_OPTIMIZE_FOR_PERFORMANCE \
+            -e CC_OPTIMIZE_FOR_PERFORMANCE_O3
 
         ### Enable bbr2
         if [ -n "$_tcp_bbr2" ]; then
@@ -694,7 +645,7 @@
         cd ${srcdir}/"zfs"
         ./autogen.sh
         sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
-        ./configure KERNEL_LLVM=1 CFLAGS="-O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-num-threads=36 -mllvm -polly-scheduling=dynamic -mllvm -polly-scheduling-chunksize=1 -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -fuse-ld=musl-clang -static-libgcc -nostdinc --sysroot $libc -isystem $libc_inc -L-user-start -L $libc_lib -L-user-end --std=gnu18" CC=clang LD=ld.lld --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
+        ./configure KERNEL_LLVM=1 CFLAGS="-O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-num-threads=36 -mllvm -polly-scheduling=dynamic -mllvm -polly-scheduling-chunksize=1 -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none \
             --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
             --libexecdir=/usr/lib/zfs --with-config=kernel \
             -e-linux-builtin \
