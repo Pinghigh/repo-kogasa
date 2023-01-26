@@ -639,8 +639,8 @@
 
         ### Rewrite configuration
         echo "Rewrite configuration..."
-        make ${BUILD_FLAGS[*]} prepare CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so"
-        make ${BUILD_FLAGS[*]} modules_prepare CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so"
+        make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so" prepare 
+        make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so" modules_prepare 
 
         cd ${srcdir}/"zfs"
         ./autogen.sh
