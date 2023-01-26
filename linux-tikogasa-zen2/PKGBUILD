@@ -211,7 +211,7 @@
     libc="/usr/lib/musl"
     libc_inc="/usr/lib/musl/include"
     libc_lib="/usr/lib/musl/lib"
-    BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld"
+    BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld CFLAGS='-Xclang -load -Xclang LLVMPolly.so' CXXFLAGS='-Xclang -load -Xclang LLVMPolly.so'"
     _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
     source=(
         #"clang"
