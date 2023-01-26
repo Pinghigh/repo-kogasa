@@ -211,7 +211,7 @@
     libc="/usr/lib/musl"
     libc_inc="/usr/lib/musl/include"
     libc_lib="/usr/lib/musl/lib"
-    BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld CFLAGS='-Xclang -load -Xclang LLVMPolly.so' CXXFLAGS='-Xclang -load -Xclang LLVMPolly.so'"
+    BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld "
     _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
     source=(
         #"clang"
@@ -639,8 +639,8 @@
 
         ### Rewrite configuration
         echo "Rewrite configuration..."
-        make ${BUILD_FLAGS[*]} prepare 
-        make ${BUILD_FLAGS[*]} modules_prepare 
+        make ${BUILD_FLAGS[*]} prepare CFLAGS='-Xclang -load -Xclang LLVMPolly.so' CXXFLAGS='-Xclang -load -Xclang LLVMPolly.so'
+        make ${BUILD_FLAGS[*]} modules_prepare CFLAGS='-Xclang -load -Xclang LLVMPolly.so' CXXFLAGS='-Xclang -load -Xclang LLVMPolly.so'
 
         cd ${srcdir}/"zfs"
         ./autogen.sh
@@ -655,11 +655,11 @@
         cd ${srcdir}/${_srcname}
         scripts/config -e CONFIG_ZFS
 
-        yes "" | make ${BUILD_FLAGS[*]} config >/dev/null
+        yes "" | make ${BUILD_FLAGS[*]} CFLAGS='-Xclang -load -Xclang LLVMPolly.so' CXXFLAGS='-Xclang -load -Xclang LLVMPolly.so' config >/dev/null
         diff -u ../config .config || :
 
         ### Prepared version
-        make ${BUILD_FLAGS[*]} -s kernelrelease > version
+        make ${BUILD_FLAGS[*]} CFLAGS='-Xclang -load -Xclang LLVMPolly.so' CXXFLAGS='-Xclang -load -Xclang LLVMPolly.so' -s kernelrelease > version
         echo "Prepared $pkgbase version $(<version)"
 
 	#make ${BUILD_FLAGS[*]} menuconfig
