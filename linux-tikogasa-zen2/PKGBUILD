@@ -648,7 +648,7 @@
         ./configure KERNEL_LLVM=1 CFLAGS="-O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-num-threads=36 -mllvm -polly-scheduling=dynamic -mllvm -polly-scheduling-chunksize=1 -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none" CC=clang LD=ld.lld --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
             --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
             --libexecdir=/usr/lib/zfs --with-config=kernel \
-            -e-linux-builtin \
+            --enable-linux-builtin \
             --with-linux=${srcdir}/$_srcname
         ./copy-builtin ${srcdir}/${_srcname}
 
