@@ -231,7 +231,7 @@
     )
     ## ZFS Support
     if true; then
-        source+=("git+https://github.com/cachyos/zfs.git#commit=04b02785b67f9b976c43643dd52ce6cdbc22e11e")
+        source+=("git+https://github.com/cachyos/zfs.git#commit=92e0d9d183ce6752cd52f7277c8321d81df9ffee")
     fi
     export KBUILD_BUILD_HOST=cleararch
     export KBUILD_BUILD_USER=$pkgbase
@@ -684,7 +684,7 @@
                     'linux-firmware: firmware images needed for some devices'
                     'modprobed-db: Keeps track of EVERY kernel module that has ever been probed - useful for those of us who make localmodconfig'
                     'uksmd: Userspace KSM helper daemon')
-        provides=(VIRTUALBOX-GUEST-MODULES WIREGUARD-MODULE KSMBD-MODULE UKSMD-BUILTIN)
+        provides=(VIRTUALBOX-GUEST-MODULES ZFS-MODULE WIREGUARD-MODULE KSMBD-MODULE UKSMD-BUILTIN)
 
         cd ${srcdir}/$_srcname
 
