@@ -189,7 +189,7 @@
     pkgsuffix=tikogasa
     pkgbase=linux-$pkgsuffix-zen2
     _major=6.1
-    _minor=8
+    _minor=9
     #_minorc=$((_minor+1))
     #_rcver=rc8
     pkgver=${_major}.${_minor}
@@ -632,8 +632,8 @@
 
         echo "Enable USER_NS_UNPRIVILEGED"
         scripts/config -e USER_NS
-        echo "Enable WINE FASTSYNC"
-        scripts/config -e WINESYNC
+        #echo "Enable WINE FASTSYNC"
+        #scripts/config -e WINESYNC
         
         scripts/config -e CONFIG_MODULES
 
@@ -662,7 +662,7 @@
         make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so" -s kernelrelease > version
         echo "Prepared $pkgbase version $(<version)"
 
-	#make ${BUILD_FLAGS[*]} menuconfig
+	    make ${BUILD_FLAGS[*]} menuconfig
 
 
         ### Save configuration for later reuse
