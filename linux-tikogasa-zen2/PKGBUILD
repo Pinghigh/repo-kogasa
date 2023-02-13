@@ -19,7 +19,7 @@
     # 'cfs' - select 'Completely Fair Scheduler'
     # 'tt' - select 'Task Type Scheduler by Hamad Marri'
     # 'hardened' - select 'BORE Scheduler hardened' ## kernel with hardened config and hardening patches with the bore scheduler
-    _cpusched=${_cpusched-'cacule'}
+    _cpusched=${_cpusched-'pds'}
 
     ### BUILD OPTIONS
     # Set these variables to ANYTHING that is not null to enable them
@@ -189,7 +189,7 @@
     pkgsuffix=tikogasa
     pkgbase=linux-$pkgsuffix-zen2
     _major=6.1
-    _minor=8
+    _minor=11
     #_minorc=$((_minor+1))
     #_rcver=rc8
     pkgver=${_major}.${_minor}
@@ -286,8 +286,8 @@
         if true; then
             echo "Setting tick rate to 1k Hz..."
             scripts/config -d HZ_300 \
-                -e HZ_1000 \
-                --set-val HZ 1000
+                -e HZ_2000 \
+                --set-val HZ 2000
         elif [ "$_HZ_ticks" = "750" ]; then
             echo "Setting tick rate to 750Hz..."
             scripts/config -d HZ_300 \
