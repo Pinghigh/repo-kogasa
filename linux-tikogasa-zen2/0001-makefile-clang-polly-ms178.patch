@@ -41,7 +41,8 @@ index 006680a6f13d..65f67a260cfe 100644
  
  # Make variables (CC, etc...)
  CPP		= $(CC) -E
-@@ -531,14 +531,14 @@ PAHOLE_FLAGS	= $(shell PAHOLE=$(PAHOLE) $(srctree)/scripts/pahole-flags.sh)
+@@ -529,14 +529,14 @@ PAHOLE_FLAGS	= $(shell PAHOLE=$(PAHOLE) $(srctree)/scripts/pahole-flags.sh)
+
  CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
  		  -Wbitwise -Wno-return-void -Wno-unknown-attribute $(CF)
  NOSTDINC_FLAGS :=
@@ -59,7 +60,7 @@ index 006680a6f13d..65f67a260cfe 100644
  
  # Use USERINCLUDE when you must reference the UAPI directories only.
  USERINCLUDE    := \
-@@ -563,7 +563,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs \
+@@ -562,7 +562,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs \
  		   -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE \
  		   -Werror=implicit-function-declaration -Werror=implicit-int \
  		   -Werror=return-type -Wno-format-security \
