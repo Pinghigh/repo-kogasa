@@ -662,7 +662,7 @@
         make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so" -s kernelrelease > version
         echo "Prepared $pkgbase version $(<version)"
 
-	#make ${BUILD_FLAGS[*]} menuconfig
+	# make ${BUILD_FLAGS[*]} menuconfig
 
 
         ### Save configuration for later reuse
