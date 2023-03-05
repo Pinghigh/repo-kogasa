@@ -189,7 +189,7 @@ _latency_nice=${_latency_nice-}
 pkgsuffix=tikogasa
 pkgbase=linux-$pkgsuffix-zen2
 _major=6.2
-_minor=1
+_minor=2
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -216,8 +216,8 @@ _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${
 source=(
     #"clang"
     #"ld.lld"
-    #"https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
-    "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+    "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+    # "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
     "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
     "linux-patches::git+https://github.com/xanmod/linux-patches"
     "config"
