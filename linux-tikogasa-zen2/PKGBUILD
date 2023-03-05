@@ -286,8 +286,8 @@ prepare() {
     ### Select tick rate
     echo "Setting tick rate to 2k Hz..."
     scripts/config -d HZ_300 \
-        -e HZ_2000 \
-        --set-val HZ 2000
+        -e HZ_1000 \
+        --set-val HZ 1000
 
     ### Setting NR_CPUS
     echo "Setting NR_CPUS 32..."
