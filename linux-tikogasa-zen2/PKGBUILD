@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa
 pkgbase=linux-$pkgsuffix-zen2
 _major=6.2
-_minor=10
+_minor=11
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -19,10 +19,6 @@ license=('GPL2')
 options=('!strip')
 _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
 makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod python git llvm llvm-libs clang lld polly make patch musl)
-
-libc="/usr/lib/musl"
-libc_inc="/usr/lib/musl/include"
-libc_lib="/usr/lib/musl/lib"
 BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld "
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
 source=(
@@ -38,10 +34,10 @@ source=(
     #"https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
     "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
     "${_patchsource}/all/0001-cachyos-base-all.patch"
-    # "${_patchsource}/misc/0001-bcachefs.patch"
-    "${_patchsource}/sched/0001-prjc-cachy.patch"
+    "${_patchsource}/misc/0001-bcachefs.patch"
+    "${_patchsource}/sched/0001-EEVDF.patch"
     "${_patchsource}/misc/0001-lrng.patch"
-    "git+https://github.com/cachyos/zfs.git#commit=00e580bca282bf30913fcf5832fc58191cf0ff32"
+    "git+https://github.com/cachyos/zfs.git#commit=33003ecc93ef532e41255a6f91c585b26f871ec0"
 )
 
 export KBUILD_BUILD_HOST=cleararch
@@ -99,6 +95,10 @@ prepare() {
         -e HZ_1000 \
         --set-val HZ 1000
 
+    ### Enable BORE scheduler
+     echo "Selecting BORE CPU scheduler..."
+    scripts/config -e SCHED_BORE
+
     ### Setting NR_CPUS
     echo "Setting NR_CPUS 32..."
     scripts/config --set-val NR_CPUS 32
@@ -145,12 +145,6 @@ prepare() {
     echo "Enable THP always..."
     scripts/config -d TRANSPARENT_HUGEPAGE_MADVISE \
         -e TRANSPARENT_HUGEPAGE_ALWAYS
-
-    echo "Selecting PDS CPU scheduler..."
-    scripts/config -e SCHED_ALT \
-        -d SCHED_BMQ \
-        -e SCHED_PDS \
-        -e PSI_DEFAULT_DISABLED
 
     ### Enable LRNG
     echo "Enabling Linux Random Number Generator ..."
@@ -306,7 +300,7 @@ prepare() {
     make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so" -s kernelrelease >version
     echo "Prepared $pkgbase version $(<version)"
 
-    # make ${BUILD_FLAGS[*]} menuconfig
+    make ${BUILD_FLAGS[*]} menuconfig
 
     ### Save configuration for later reuse
     echo "Save configuration for later reuse..."
