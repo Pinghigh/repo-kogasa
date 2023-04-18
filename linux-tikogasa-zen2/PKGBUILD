@@ -34,7 +34,7 @@ source=(
     #"https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
     "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
     "${_patchsource}/all/0001-cachyos-base-all.patch"
-    "${_patchsource}/misc/0001-bcachefs.patch"
+#     "${_patchsource}/misc/0001-bcachefs.patch"
     "${_patchsource}/sched/0001-EEVDF.patch"
     "${_patchsource}/misc/0001-lrng.patch"
     "git+https://github.com/cachyos/zfs.git#commit=33003ecc93ef532e41255a6f91c585b26f871ec0"
