@@ -336,7 +336,8 @@ _package() {
     echo "$pkgbase" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
 
     echo "Installing modules..."
-    make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 modules_install # not Suppress depmod
+    _make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
+        DEPMOD=/doesnt/exist  modules_install  # Suppress depmod
 
     # remove build and source links
     rm "$modulesdir"/{source,build}
@@ -406,7 +407,7 @@ _package-headers() {
     echo "Stripping build tools..."
     local file
     while read -rd '' file; do
-        case "$(file -bi "$file")" in
+        case "$(file -Sib "$file")" in
         application/x-sharedlib\;*) # Libraries (.so)
             strip -v $STRIP_SHARED "$file" ;;
         application/x-archive\;*) # Libraries (.a)
@@ -425,17 +426,6 @@ _package-headers() {
     mkdir -p "$pkgdir/usr/src"
     ln -sr "$builddir" "$pkgdir/usr/src/$pkgbase"
 }
-
-# _package-zfs(){
-#     pkgdesc="zfs module for the $pkgdesc kernel"
-#     depends=('pahole' linux-$pkgsuffix=$_kernver)
-
-#     cd ${srcdir}/"zfs"
-#     install -dm755 "$pkgdir/usr/lib/modules/${_kernver}-${pkgsuffix}"
-#     install -m644 module/*/*.ko "$pkgdir/usr/lib/modules/${_kernver}-${pkgsuffix}"
-#     find "$pkgdir" -name '*.ko' -exec zstd --rm -10 {} +
-#     #  sed -i -e "s/EXTRAMODULES='.*'/EXTRAMODULES='${pkgver}-${pkgbase}'/" "$startdir/zfs.install"
-# }
 
 pkgname=("$pkgbase" "$pkgbase-headers")
 for _p in "${pkgname[@]}"; do
