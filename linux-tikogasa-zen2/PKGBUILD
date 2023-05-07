@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa
 pkgbase=linux-$pkgsuffix-zen2
-_major=6.2
-_minor=11
+_major=6.3
+_minor=1
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -18,14 +18,14 @@ url="https://github.com/CachyOS/linux-cachyos"
 license=('GPL2')
 options=('!strip')
 _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
-makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod python git llvm llvm-libs clang lld polly make patch musl)
+makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod python git llvm llvm-libs clang lld polly make patch python)
 BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld "
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
 source=(
     #"clang"
     #"ld.lld"
-    "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
-    # "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+    #"https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+    "https://mirror.tuna.tsinghua.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
     "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
     "linux-patches::git+https://github.com/xanmod/linux-patches"
     "config"
@@ -36,24 +36,32 @@ source=(
     "${_patchsource}/all/0001-cachyos-base-all.patch"
 #     "${_patchsource}/misc/0001-bcachefs.patch"
     "${_patchsource}/sched/0001-EEVDF.patch"
+    "${_patchsource}/sched/0001-bore-eevdf.patch"
     "${_patchsource}/misc/0001-lrng.patch"
-    "git+https://github.com/cachyos/zfs.git#commit=33003ecc93ef532e41255a6f91c585b26f871ec0"
+    "git+https://github.com/cachyos/zfs.git#commit=ac18dc77f3703940682aecb442f4e58aa2c14f1a"
 )
 
 export KBUILD_BUILD_HOST=cleararch
 export KBUILD_BUILD_USER=$pkgbase
 export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
+_make_alt() {
+    test -s version
+    make KERNELRELEASE="$(<version)" "$@"
+}
+
 prepare() {
     clang ${srcdir}/test.c -O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-num-threads=36 -mllvm -polly-scheduling=dynamic -mllvm -polly-scheduling-chunksize=1 -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -std=gnu18 -o ${srcdir}/test.out
-    cp clearlinux-linux/*.patch ./
-    cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
+    #cp clearlinux-linux/*.patch ./
+    #cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
     cd ${srcdir}/$_srcname
 
     echo "Setting version..."
-    scripts/setlocalversion --save-scmversion
     echo "-$pkgrel" >localversion.10-pkgrel
     echo "${pkgbase#linux}" >localversion.20-pkgname
+    make ${BUILD_FLAGS[*]} defconfig
+    make ${BUILD_FLAGS[*]} -s kernelrelease > version
+    make ${BUILD_FLAGS[*]} mrproper
 
     local src
     for src in "${source[@]}"; do
@@ -227,13 +235,7 @@ prepare() {
         -e ZSWAP_COMPRESSOR_DEFAULT_ZSTD \
         --set-str ZSWAP_COMPRESSOR_DEFAULT zstd
 
-    ### Selecting the ZSTD modules and kernel compression level
-    echo "Enabling standard ZSTD modules and kernel compression ratio..."
-    scripts/config --set-val MODULE_COMPRESS_ZSTD_LEVEL 9 \
-        -d MODULE_COMPRESS_ZSTD_ULTRA \
-        --set-val ZSTD_COMPRESSION_LEVEL 19
-
-    ### Disable DEBUG
+### Disable DEBUG
     scripts/config -d DEBUG_INFO \
         -d DEBUG_INFO_BTF \
         -d DEBUG_INFO_DWARF4 \
@@ -277,8 +279,8 @@ prepare() {
 
     ### Rewrite configuration
     echo "Rewrite configuration..."
-    make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so" prepare
-    make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so" modules_prepare
+    _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so" prepare
+    _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so" modules_prepare
 
     cd ${srcdir}/"zfs"
     ./autogen.sh
@@ -293,11 +295,10 @@ prepare() {
     cd ${srcdir}/${_srcname}
     scripts/config -e CONFIG_ZFS
 
-    yes "" | make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so" config >/dev/null
+    yes "" | _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so" config >/dev/null
     diff -u ../config .config || :
 
     ### Prepared version
-    make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so" -s kernelrelease >version
     echo "Prepared $pkgbase version $(<version)"
 
     # make ${BUILD_FLAGS[*]} menuconfig
@@ -324,13 +325,12 @@ _package() {
 
     cd ${srcdir}/$_srcname
 
-    local kernver="$(<version)"
     local modulesdir="$pkgdir/usr/lib/modules/$kernver"
 
     echo "Installing boot image..."
     # systemd expects to find the kernel here to allow hibernation
     # https://github.com/systemd/systemd/commit/edda44605f06a41fb86b7ab8128dcf99161d2344
-    install -Dm644 "$(make -s image_name)" "$modulesdir/vmlinuz"
+    install -Dm644 "$(_make_alt -s image_name)" "$modulesdir/vmlinuz"
 
     # Used by mkinitcpio to name the kernel
     echo "$pkgbase" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
@@ -445,9 +445,15 @@ for _p in "${pkgname[@]}"; do
         }"
 done
 
-sha256sums=('67dacc2b78605a56e997f4c08d009be87c98ec66f1870220226c8b3cc676590f'
-    'b782e644a0265c9241b225e14127024aaf5a52a5e19bf8797b4b88c1156d1faf'
-    '34e2cad286f32d8c1c26e4ff18726c9e0aee151e82088bb78c3ae4fb536bf962'
-    'e1d45b5842079a5f0f53d7ea2d66ffa3f1497766f3ccffcf13ed00f1ac67f95e'
-    'dee8ed716d713f27c8d75a1cef6eabf4ddcb63fe4e37d5b9cf47b25d791e5ea0'
-    '2b9f45f0cc8e7c4871cd75e0932b03f2a0c633db9a875af1f308d4f4976d0948')
+b2sums=('91c7ac2fb2bdeed323b6f0812582bd82c78f62ce3754063716a8769b30c41e35ae06b042ef27fb3c59a63ca17ec764313d7971ba2ddf84f8cf9fe5885ffe0644'
+        'SKIP'
+        'SKIP'
+        '06e5150c03506c358e2877b047a47ad9ec005864552f19ede56d26699320f830119b67f725de489b5545823114a80974d15cd0a1f668daa835a3a80e0e3842ff'
+        '0bd40791b5df303f88b23676403c678307fb5d49baa569c217cff12166ceac29560d7eb3cfa2e4c6cbb0433aa3d1715d5f1fa4f57f4e3c8c6788b82950f85537'
+        '7ae11354cee8735e81e8328a8fb2bc4c1e576b2aea9dd5f3f40aa123f40fbca47a01688e1c605e07f72fd189f1836854ffba8f41c26b43912b8f0db15ff64dc3'
+        '8176dce642d239ed6747ec77697ae4025e2584ab33d3f77c4a6cdd81eec187bece44de8c0592eb61e308fcdf03a914610d6c0f5db4d5273bb547ecfe66ebb643'
+        '944cc70d1593a6fef259ec6ca59001985c3e708a9447845c0dbba4cab6d386e265e240854f44cdf1ab68d3b62dbea02e9857175bd1d738462277ec895094fa1e'
+        '4ab7071f2b82fdfd4d1150c8dba798a5c3e2d6eca8c01515e935179559b36ed0d95b5fda9a63cc0704dba720633b3713eec0bf963fe7f56d43fb79b4631edea0'
+        '1f4434af752c94452edf717f8d4f05a59249beaf4fddd203a5848351bc4f08853017aff3de2f1afdf506b34d688913eb81586be2b7768099b5e7331dde3fbdf2'
+        '9343c9be5818cc4babdb92800ffb47fd4b4a58a8c3f1915dd26030c24c2ae9d48ff9942b4625a53d644997c897df8515c27e75de9b8e9be3282fcf4979333c47'
+        'SKIP')
