@@ -18,7 +18,7 @@ url="https://github.com/CachyOS/linux-cachyos"
 license=('GPL2')
 options=('!strip')
 _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
-makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod python git llvm llvm-libs clang lld polly make patch python)
+makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod python git llvm llvm-libs clang lld polly make patch python kmod)
 BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld "
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
 source=(
@@ -340,7 +340,7 @@ _package() {
         DEPMOD=/doesnt/exist  modules_install  # Suppress depmod
 
     # remove build and source links
-    rm "$modulesdir"/{source,build}
+    rm "$modulesdir"{source,build}
 }
 
 _package-headers() {
