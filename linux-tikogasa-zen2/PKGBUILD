@@ -24,8 +24,8 @@ _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${
 source=(
     #"clang"
     #"ld.lld"
-    #"https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
-    "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+    "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+    #"https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
     "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
     "linux-patches::git+https://github.com/xanmod/linux-patches"
     "config"
@@ -309,7 +309,7 @@ prepare() {
     ### Prepared version
     echo "Prepared $pkgbase version $(<version)"
 
-    make ${BUILD_FLAGS[*]} menuconfig
+    # make ${BUILD_FLAGS[*]} menuconfig
 
     ### Save configuration for later reuse
     echo "Save configuration for later reuse..."
