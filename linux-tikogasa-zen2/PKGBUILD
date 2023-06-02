@@ -18,7 +18,7 @@ url="https://github.com/CachyOS/linux-cachyos"
 license=('GPL2')
 options=('!strip')
 _commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
-makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod python git llvm llvm-libs clang lld polly make patch python)
+makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod python git llvm llvm-libs clang lld polly make patch python kmod)
 BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld "
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
 source=(
@@ -344,10 +344,11 @@ _package() {
     echo "$pkgbase" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
 
     echo "Installing modules..."
-    make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 modules_install # not Suppress depmod
+    _make_alt INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
+        DEPMOD=/doesnt/exist  modules_install  # Suppress depmod
 
     # remove build and source links
-    rm "$modulesdir"/{source,build}
+    rm "$modulesdir"{source,build}
 }
 
 _package-headers() {
@@ -414,7 +415,7 @@ _package-headers() {
     echo "Stripping build tools..."
     local file
     while read -rd '' file; do
-        case "$(file -bi "$file")" in
+        case "$(file -Sib "$file")" in
         application/x-sharedlib\;*) # Libraries (.so)
             strip -v $STRIP_SHARED "$file" ;;
         application/x-archive\;*) # Libraries (.a)
@@ -433,17 +434,6 @@ _package-headers() {
     mkdir -p "$pkgdir/usr/src"
     ln -sr "$builddir" "$pkgdir/usr/src/$pkgbase"
 }
-
-# _package-zfs(){
-#     pkgdesc="zfs module for the $pkgdesc kernel"
-#     depends=('pahole' linux-$pkgsuffix=$_kernver)
-
-#     cd ${srcdir}/"zfs"
-#     install -dm755 "$pkgdir/usr/lib/modules/${_kernver}-${pkgsuffix}"
-#     install -m644 module/*/*.ko "$pkgdir/usr/lib/modules/${_kernver}-${pkgsuffix}"
-#     find "$pkgdir" -name '*.ko' -exec zstd --rm -10 {} +
-#     #  sed -i -e "s/EXTRAMODULES='.*'/EXTRAMODULES='${pkgver}-${pkgbase}'/" "$startdir/zfs.install"
-# }
 
 pkgname=("$pkgbase" "$pkgbase-headers")
 for _p in "${pkgname[@]}"; do
