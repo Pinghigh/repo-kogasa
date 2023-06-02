@@ -1,5 +1,5 @@
-pkgsuffix=tikogasa
-pkgbase=linux-$pkgsuffix-zen2
+pkgsuffix=tikogasa-zen2
+pkgbase=linux-$pkgsuffix
 _major=6.3
 _minor=5
 #_minorc=$((_minor+1))
