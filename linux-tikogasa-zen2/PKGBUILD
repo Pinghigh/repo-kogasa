@@ -24,8 +24,8 @@ _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${
 source=(
     #"clang"
     #"ld.lld"
-    "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
-    #"https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+    #"https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+   "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
     "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
     "linux-patches::git+https://github.com/xanmod/linux-patches"
     "config"
@@ -319,7 +319,7 @@ prepare() {
 
 build() {
     cd ${srcdir}/${_srcname}
-    make ${BUILD_FLAGS[*]} all -j4
+    make ${BUILD_FLAGS[*]} all -j16
 }
 
 _package() {
@@ -332,6 +332,8 @@ _package() {
     provides=(VIRTUALBOX-GUEST-MODULES ZFS-MODULE WIREGUARD-MODULE KSMBD-MODULE UKSMD-BUILTIN)
 
     cd ${srcdir}/$_srcname
+
+    _kernver=$pkgver-$pkgrel
 
     local modulesdir="$pkgdir/usr/lib/modules/$kernver"
 
@@ -348,7 +350,7 @@ _package() {
         DEPMOD=/doesnt/exist  modules_install  # Suppress depmod
 
     # remove build and source links
-    rm "$modulesdir"{source,build}
+    rm "$modulesdir"/{source,build}
 }
 
 _package-headers() {
