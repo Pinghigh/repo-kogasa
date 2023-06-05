@@ -324,37 +324,36 @@ build() {
 
 _package() {
     pkgdesc="The $pkgdesc kernel and modules"
-    depends=('coreutils' 'kmod' 'mkinitcpio')
+    depends=('coreutils' 'kmod' 'initramfs')
     optdepends=('wireless-regdb: to set the correct wireless channels of your country'
-        'linux-firmware: firmware images needed for some devices'
-        'modprobed-db: Keeps track of EVERY kernel module that has ever been probed - useful for those of us who make localmodconfig'
-        'uksmd: Userspace KSM helper daemon')
-    provides=(VIRTUALBOX-GUEST-MODULES ZFS-MODULE WIREGUARD-MODULE KSMBD-MODULE UKSMD-BUILTIN)
+                'linux-firmware: firmware images needed for some devices'
+                'modprobed-db: Keeps track of EVERY kernel module that has ever been probed - useful for those of us who make localmodconfig'
+                'uksmd: Userspace KSM helper daemon')
+    provides=(VIRTUALBOX-GUEST-MODULES WIREGUARD-MODULE KSMBD-MODULE UKSMD-BUILTIN)
 
     cd ${srcdir}/$_srcname
 
-    local modulesdir="$pkgdir/usr/lib/modules/$pkgver-$pkgrel/"
+    local modulesdir="$pkgdir/usr/lib/modules/$(<version)"
 
     echo "Installing boot image..."
     # systemd expects to find the kernel here to allow hibernation
     # https://github.com/systemd/systemd/commit/edda44605f06a41fb86b7ab8128dcf99161d2344
-    install -Dm644 "$(_make_alt -s image_name)" "$modulesdir/vmlinuz"
+    install -Dm644 "$(_make -s image_name)" "$modulesdir/vmlinuz"
 
     # Used by mkinitcpio to name the kernel
     echo "$pkgbase" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
 
     echo "Installing modules..."
-    _make_alt INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
+    _make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
         DEPMOD=/doesnt/exist  modules_install  # Suppress depmod
 
     # remove build and source links
-    echo "$pkgdir/usr/lib/modules/$pkgver-$pkgrel/"
-    rm "$pkgdir/usr/lib/modules/$pkgver-$pkgrel/{source,build}
+    rm "$modulesdir"/{source,build}
 }
 
 _package-headers() {
     pkgdesc="Headers and scripts for building modules for the $pkgdesc kernel"
-    depends=('pahole' linux-${pkgsuffix})
+    depends=('pahole' linux-${pkgsuffix} )
 
     cd ${srcdir}/${_srcname}
     local builddir="$pkgdir/usr/lib/modules/$(<version)/build"
@@ -417,14 +416,14 @@ _package-headers() {
     local file
     while read -rd '' file; do
         case "$(file -Sib "$file")" in
-        application/x-sharedlib\;*) # Libraries (.so)
-            strip -v $STRIP_SHARED "$file" ;;
-        application/x-archive\;*) # Libraries (.a)
-            strip -v $STRIP_STATIC "$file" ;;
-        application/x-executable\;*) # Binaries
-            strip -v $STRIP_BINARIES "$file" ;;
-        application/x-pie-executable\;*) # Relocatable binaries
-            strip -v $STRIP_SHARED "$file" ;;
+            application/x-sharedlib\;*)      # Libraries (.so)
+                strip -v $STRIP_SHARED "$file" ;;
+            application/x-archive\;*)        # Libraries (.a)
+                strip -v $STRIP_STATIC "$file" ;;
+            application/x-executable\;*)     # Binaries
+                strip -v $STRIP_BINARIES "$file" ;;
+            application/x-pie-executable\;*) # Relocatable binaries
+                strip -v $STRIP_SHARED "$file" ;;
         esac
     done < <(find "$builddir" -type f -perm -u+x ! -name vmlinux -print0)
 
@@ -436,23 +435,27 @@ _package-headers() {
     ln -sr "$builddir" "$pkgdir/usr/src/$pkgbase"
 }
 
+_package-zfs(){
+    pkgdesc="zfs module for the $pkgdesc kernel"
+    depends=('pahole' linux-$pkgsuffix=$_kernver)
+    provides=('ZFS-MODULE')
+
+    cd ${srcdir}/"zfs"
+    install -dm755 "$pkgdir/usr/lib/modules/${_kernver}-${pkgsuffix}"
+    install -m644 module/*.ko "$pkgdir/usr/lib/modules/${_kernver}-${pkgsuffix}"
+    find "$pkgdir" -name '*.ko' -exec zstd --rm -10 {} +
+    #  sed -i -e "s/EXTRAMODULES='.*'/EXTRAMODULES='${pkgver}-${pkgbase}'/" "$startdir/zfs.install"
+}
+
 pkgname=("$pkgbase" "$pkgbase-headers")
+if [ -n "$_build_zfs" ]; then
+    pkgname+=("$pkgbase-zfs")
+fi
 for _p in "${pkgname[@]}"; do
     eval "package_$_p() {
-        $(declare -f "_package${_p#$pkgbase}")
-        _package${_p#$pkgbase}
-        }"
+    $(declare -f "_package${_p#$pkgbase}")
+    _package${_p#$pkgbase}
+    }"
 done
 
-b2sums=('646a94591eae93db9301a11e5300579c8cce7d2a544727cb88efed86d05ba070a247498d9c83d7b7cdbead4e7d46537134c877813aa7f188dd36b403c58d0c11'
-        'SKIP'
-        'SKIP'
-        '79dcdebaa7c3bd209d7a64b24f1440d84cd0fb380df65f60c06da284a6d5c54760880bbd9950b551140e9704a6e085c9bf7aaf52126f37f4cefc6034245fe7b2'
-        '0bd40791b5df303f88b23676403c678307fb5d49baa569c217cff12166ceac29560d7eb3cfa2e4c6cbb0433aa3d1715d5f1fa4f57f4e3c8c6788b82950f85537'
-        '7ae11354cee8735e81e8328a8fb2bc4c1e576b2aea9dd5f3f40aa123f40fbca47a01688e1c605e07f72fd189f1836854ffba8f41c26b43912b8f0db15ff64dc3'
-        '8176dce642d239ed6747ec77697ae4025e2584ab33d3f77c4a6cdd81eec187bece44de8c0592eb61e308fcdf03a914610d6c0f5db4d5273bb547ecfe66ebb643'
-        '0008b4bfc896a1212abae61dd2b0f1ce68220f48a064a97aa1988e8c46058f8c23c4db85f99cb9fb5ecf311b2aefe78a081cd064e6ac5d5830dab2449ba7a40b'
-        '7740148bce24e4e51ef260405def1c9afd1eabffeca1c1db8e5e57437c0e63b0504bddb6519df77fdc9cc702a1613f183032b76e88cae2a8012bc504026560bf'
-        '55d452686eecbba6cbdfa65d0c1892b48370ca42d14c442e99df1457a415c7573f80272bee97081de0924b75730c5c209ea38974f8adf966e1227116cda0da02'
-        '9343c9be5818cc4babdb92800ffb47fd4b4a58a8c3f1915dd26030c24c2ae9d48ff9942b4625a53d644997c897df8515c27e75de9b8e9be3282fcf4979333c47'
-        'SKIP')
+b2sums=()
