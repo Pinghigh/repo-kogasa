@@ -285,8 +285,8 @@ prepare() {
 
     scripts/config -e CONFIG_MODULES
     
-echo $pkgdir/usr/lib/modules/$(<version)
-exit
+    echo $pkgdir/usr/lib/modules/$(<version)
+
     ### Rewrite configuration
     echo "Rewrite configuration..."
     _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" prepare
