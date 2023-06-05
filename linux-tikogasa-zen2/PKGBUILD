@@ -333,9 +333,7 @@ _package() {
 
     cd ${srcdir}/$_srcname
 
-    _kernver=$pkgver-$pkgrel
-
-    local modulesdir="$pkgdir/usr/lib/modules/$kernver"
+    local modulesdir="$pkgdir/usr/lib/modules/$pkgver-$pkgrel/"
 
     echo "Installing boot image..."
     # systemd expects to find the kernel here to allow hibernation
@@ -350,7 +348,8 @@ _package() {
         DEPMOD=/doesnt/exist  modules_install  # Suppress depmod
 
     # remove build and source links
-    rm "$modulesdir"/{source,build}
+    echo "$pkgdir/usr/lib/modules/$pkgver-$pkgrel/"
+    rm "$pkgdir/usr/lib/modules/$pkgver-$pkgrel/{source,build}
 }
 
 _package-headers() {
