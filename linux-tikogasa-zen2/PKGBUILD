@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
 _major=6.3
-_minor=5
+_minor=8
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -24,8 +24,8 @@ _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${
 source=(
     #"clang"
     #"ld.lld"
-    #"https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
-   "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+    "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+    # "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
     "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
     "linux-patches::git+https://github.com/xanmod/linux-patches"
     "config"
@@ -34,11 +34,11 @@ source=(
     #"https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
     "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
     "${_patchsource}/all/0001-cachyos-base-all.patch"
-#     "${_patchsource}/misc/0001-bcachefs.patch"
+    # "${_patchsource}/misc/0001-bcachefs.patch"
     "${_patchsource}/sched/0001-EEVDF.patch"
     "${_patchsource}/sched/0001-bore-eevdf.patch"
     "${_patchsource}/misc/0001-lrng.patch"
-    "git+https://github.com/cachyos/zfs.git#commit=ac18dc77f3703940682aecb442f4e58aa2c14f1a"
+    "git+https://github.com/cachyos/zfs.git#commit=893549d6259a6904b7c1ee58080eb72acc4ff7aa"
 )
 
 export KBUILD_BUILD_HOST=cleararch
@@ -321,7 +321,7 @@ prepare() {
 
 build() {
     cd ${srcdir}/${_srcname}
-    make ${BUILD_FLAGS[*]} all -j16
+    make ${BUILD_FLAGS[*]} all -j4
 }
 
 _package() {
