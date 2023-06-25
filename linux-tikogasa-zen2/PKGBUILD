@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
 _major=6.3
-_minor=8
+_minor=9
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
