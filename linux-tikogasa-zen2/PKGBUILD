@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
-_major=6.3
-_minor=9
+_major=6.4
+_minor=0
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -17,7 +17,6 @@ arch=('x86_64' 'x86_64_v3')
 url="https://github.com/CachyOS/linux-cachyos"
 license=('GPL2')
 options=('!strip')
-_commit=fdbdf7e0ec56cd59e11d024c473e766429271a5c
 makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod python git llvm llvm-libs clang lld polly make patch python kmod)
 BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld "
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
@@ -31,7 +30,6 @@ source=(
     "config"
     "test.c"
     "0001-makefile-clang-polly-ms178.patch"
-    #"https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/clang+llvm-15.0.6-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
     "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
     "${_patchsource}/all/0001-cachyos-base-all.patch"
     # "${_patchsource}/misc/0001-bcachefs.patch"
