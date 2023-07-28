@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
 _major=6.4
-_minor=3
+_minor=6
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -36,7 +36,7 @@ source=(
     "${_patchsource}/sched/0001-EEVDF.patch"
     "${_patchsource}/sched/0001-bore-eevdf.patch"
     # "${_patchsource}/misc/0001-lrng.patch"
-    "git+https://github.com/openzfs/zfs.git#commit=009d3288dea524c7ad373b04b65bee8bb6f0bfea"
+    "git+https://github.com/openzfs/zfs.git#commit=4a104ac0476e7a370d5076c97c0b9bc081499fd0"
 )
 
 export KBUILD_BUILD_HOST=cleararch
@@ -49,7 +49,7 @@ _make_alt() {
 }
 
 prepare() {
-    # clang ${srcdir}/test.c -O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -lgomp -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -std=gnu18 ${srcdir}/test.out
+    # clang ${srcdir}/test.c -O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -std=gnu18 ${srcdir}/test.out
     cp clearlinux-linux/*.patch ./
     cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
     cd ${srcdir}/$_srcname
@@ -293,7 +293,7 @@ prepare() {
     cd ${srcdir}/"zfs"
     ./autogen.sh
     sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
-    ./configure KERNEL_LLVM=1 CFLAGS="-O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -lgomp -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -std=gnu18" CC=clang LD=ld.lld --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
+    ./configure KERNEL_LLVM=1 CFLAGS="-O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -std=gnu18" CC=clang LD=ld.lld --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
         --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
         --libexecdir=/usr/lib/zfs --with-config=kernel \
         --enable-linux-builtin \
@@ -444,4 +444,15 @@ for _p in "${pkgname[@]}"; do
     }"
 done
 
-b2sums=()
+b3sums=()
+sha256sums=('e1ecc496efc48aaf25a6607a4b8e52d574d6f67a2b0aa1664087d301d3515ea4'
+            'SKIP'
+            'SKIP'
+            '71bec5cc2d5ca5d67f41d420c71ec0aabee21a25116f0a373586b6db1a521d06'
+            'a179688c3cb1166c6645942405a10979548c5dcb214aa47a996c17d1141fdfbe'
+            '2fad2c3ce176607915c234937aa825f887a987a6ae15bc35b8e302335ae3e9e0'
+            'a06671be0ea57693c09f9f96fabfdefd69153bdda2bf45d516825f145e6b75cf'
+            'd0a6500f56523a107e2cf00cdc03df5c950ed48c400fdd2b9f58dee9446c129a'
+            '9336de0c29a86db04d4d30c25d13b26025cdb2c2fa241f1c45753d081d711eda'
+            'dac915a8d58efc221f64a941e46d33977a355e382af3811c299b54781b06e228'
+            'SKIP')
