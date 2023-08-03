@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
 _major=6.4
-_minor=6
+_minor=7
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -20,23 +20,34 @@ options=('!strip')
 makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod python git llvm llvm-libs clang lld polly make patch python kmod)
 BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld "
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
+_ck_patchsource="https://raw.githubusercontent.com/graysky2/linux-patches/master/linux-${_major}.y/ck-hrtimer"
 source=(
-    #"clang"
-    #"ld.lld"
-    "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
-    # "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
-    "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
-    "linux-patches::git+https://github.com/xanmod/linux-patches"
-    "config"
-    "test.c"
-    "0001-makefile-clang-polly-ms178.patch"
-    "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
-    "${_patchsource}/all/0001-cachyos-base-all.patch"
-    # "${_patchsource}/misc/0001-bcachefs.patch"
-    "${_patchsource}/sched/0001-EEVDF.patch"
-    "${_patchsource}/sched/0001-bore-eevdf.patch"
-    # "${_patchsource}/misc/0001-lrng.patch"
-    "git+https://github.com/openzfs/zfs.git#commit=4a104ac0476e7a370d5076c97c0b9bc081499fd0"
+        #"clang"
+        #"ld.lld"
+        "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+        # "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+        "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
+        "linux-patches::git+https://github.com/xanmod/linux-patches"
+        "config"
+        "test.c"
+        "0001-makefile-clang-polly-ms178.patch"
+        "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
+        "${_patchsource}/all/0001-cachyos-base-all.patch"
+        # "${_patchsource}/misc/0001-bcachefs.patch"
+        "${_patchsource}/sched/0001-EEVDF.patch"
+        "${_patchsource}/sched/0001-bore-eevdf.patch"
+        # "${_patchsource}/misc/0001-lrng.patch"
+        "git+https://github.com/openzfs/zfs.git#commit=4a104ac0476e7a370d5076c97c0b9bc081499fd0"
+
+        # -ck patches
+        ${_ck_patchsource}/0001-hrtimer-Create-highres-timeout-variants-of-schedule_.patch
+        ${_ck_patchsource}/0002-time-Special-case-calls-of-schedule_timeout-1-to-use.patch
+        ${_ck_patchsource}/0003-time-Special-case-calls-of-schedule_timeout-1-to-use.patch
+        ${_ck_patchsource}/0004-hrtimer-Replace-all-schedule-timeout-1-with-schedule.patch
+        ${_ck_patchsource}/0005-hrtimer-Replace-all-calls-to-schedule_timeout_interr.patch
+        ${_ck_patchsource}/0006-hrtimer-Replace-all-calls-to-schedule_timeout_uninte.patch
+        ${_ck_patchsource}/0007-time-Don-t-use-hrtimer-overlay-when-pm_freezing-sinc.patch
+        ${_ck_patchsource}/0008-clockevents-hrtimer-Make-hrtimer-granularity-and-min.patch
 )
 
 export KBUILD_BUILD_HOST=cleararch
@@ -44,415 +55,422 @@ export KBUILD_BUILD_USER=$pkgbase
 export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
 _make_alt() {
-    test -s version
-    make KERNELRELEASE="$(<version)" "$@"
+        test -s version
+        make KERNELRELEASE="$(<version)" "$@"
 }
 
 prepare() {
-    # clang ${srcdir}/test.c -O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -std=gnu18 ${srcdir}/test.out
-    cp clearlinux-linux/*.patch ./
-    cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
-    cd ${srcdir}/$_srcname
+        # clang ${srcdir}/test.c -O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -std=gnu18 ${srcdir}/test.out
+        cp clearlinux-linux/*.patch ./
+        cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
+        cd ${srcdir}/$_srcname
 
-    echo "Setting version..."
-    echo "-$pkgrel" >localversion.10-pkgrel
-    echo "${pkgbase#linux}" >localversion.20-pkgname
-    make ${BUILD_FLAGS[*]} defconfig
-    make ${BUILD_FLAGS[*]} -s kernelrelease > version
-    make ${BUILD_FLAGS[*]} mrproper
+        echo "Setting version..."
+        echo "-$pkgrel" >localversion.10-pkgrel
+        echo "${pkgbase#linux}" >localversion.20-pkgname
+        make ${BUILD_FLAGS[*]} defconfig
+        make ${BUILD_FLAGS[*]} -s kernelrelease >version
+        make ${BUILD_FLAGS[*]} mrproper
 
-    local src
-    for src in "${source[@]}"; do
-        src="${src%%::*}"
-        src="${src##*/}"
-        [[ $src = *.patch ]] || continue
-        echo "Applying patch $src..."
-        patch -Np1 <"../$src"
-    done
+        local src
+        for src in "${source[@]}"; do
+                src="${src%%::*}"
+                src="${src##*/}"
+                [[ $src = *.patch ]] || continue
+                echo "Applying patch $src..."
+                patch -Np1 <"../$src"
+        done
 
-    echo "Setting config..."
-    cp ../config .config
+        echo "Setting config..."
+        cp ../config .config
 
-    ### Select CPU optimization
-    MARCH=$(echo $_processor_opt | tr '[:lower:]' '[:upper:]' && echo)
-    MARCH2=MZEN2
-    scripts/config -k -d CONFIG_GENERIC_CPU
-    scripts/config -k -e CONFIG_${MARCH2}
+        ### Select CPU optimization
+        MARCH=$(echo $_processor_opt | tr '[:lower:]' '[:upper:]' && echo)
+        MARCH2=MZEN2
+        scripts/config -k -d CONFIG_GENERIC_CPU
+        scripts/config -k -e CONFIG_${MARCH2}
 
-    ### Selecting CachyOS config
-    echo "Enabling CachyOS config..."
-    scripts/config -e CACHY
+        ### Selecting CachyOS config
+        echo "Enabling CachyOS config..."
+        scripts/config -e CACHY
 
-    ### Select LLVM level
-    echo "Enabling LLVM THIN LTO..."
-    scripts/config -e LTO \
-        -e LTO_CLANG \
-        -e ARCH_SUPPORTS_LTO_CLANG \
-        -e ARCH_SUPPORTS_LTO_CLANG_THIN \
-        -d LTO_NONE \
-        -e HAS_LTO_CLANG \
-        -d LTO_CLANG_FULL \
-        -e LTO_CLANG_THIN \
-        -e HAVE_GCC_PLUGINS
+        ### Select LLVM level
+        echo "Enabling LLVM THIN LTO..."
+        scripts/config -e LTO \
+                -e LTO_CLANG \
+                -e ARCH_SUPPORTS_LTO_CLANG \
+                -e ARCH_SUPPORTS_LTO_CLANG_THIN \
+                -d LTO_NONE \
+                -e HAS_LTO_CLANG \
+                -d LTO_CLANG_FULL \
+                -e LTO_CLANG_THIN \
+                -e HAVE_GCC_PLUGINS
 
-    ### Select tick rate
-    echo "Setting tick rate to 2k Hz..."
-    scripts/config -d HZ_300 \
-        -e HZ_1000 \
-        --set-val HZ 1000
+        ### Select tick rate
+        echo "Setting tick rate to 2k Hz..."
+        scripts/config -d HZ_300 \
+                -e HZ_1000 \
+                --set-val HZ 1000
 
-    ### Enable BORE scheduler
-     echo "Selecting BORE CPU scheduler..."
-    scripts/config -e SCHED_BORE
+        ### Enable BORE scheduler
+        echo "Selecting BORE CPU scheduler..."
+        scripts/config -e SCHED_BORE
 
-    ### Setting NR_CPUS
-    echo "Setting NR_CPUS 32..."
-    scripts/config --set-val NR_CPUS 32
+        ### Setting NR_CPUS
+        echo "Setting NR_CPUS 32..."
+        scripts/config --set-val NR_CPUS 32
 
-    echo "Enabling full ticks..."
-    scripts/config -d HZ_PERIODIC \
-        -d NO_HZ_IDLE \
-        -d CONTEXT_TRACKING_FORCE \
-        -e NO_HZ_FULL_NODEF \
-        -e NO_HZ_FULL \
-        -e NO_HZ \
-        -e NO_HZ_COMMON \
-        -e CONTEXT_TRACKING
+        echo "Enabling full ticks..."
+        scripts/config -d HZ_PERIODIC \
+                -d NO_HZ_IDLE \
+                -d CONTEXT_TRACKING_FORCE \
+                -e NO_HZ_FULL_NODEF \
+                -e NO_HZ_FULL \
+                -e NO_HZ \
+                -e NO_HZ_COMMON \
+                -e CONTEXT_TRACKING
 
-    ### Select preempt type
-    echo "Enabling low latency preempt..."
-    scripts/config -e PREEMPT_BUILD \
-        -d PREEMPT_NONE \
-        -d PREEMPT_VOLUNTARY \
-        -e PREEMPT \
-        -e PREEMPT_COUNT \
-        -e PREEMPTION \
-        -e PREEMPT_DYNAMIC
+        ### Select preempt type
+        echo "Enabling low latency preempt..."
+        scripts/config -e PREEMPT_BUILD \
+                -d PREEMPT_NONE \
+                -d PREEMPT_VOLUNTARY \
+                -e PREEMPT \
+                -e PREEMPT_COUNT \
+                -e PREEMPTION \
+                -e PREEMPT_DYNAMIC
 
-    ### Enable O3
-    echo "Enabling KBUILD_CFLAGS -O3..."
-    scripts/config -d CC_OPTIMIZE_FOR_PERFORMANCE \
-        -e CC_OPTIMIZE_FOR_PERFORMANCE_O3
+        ### Enable O3
+        echo "Enabling KBUILD_CFLAGS -O3..."
+        scripts/config -d CC_OPTIMIZE_FOR_PERFORMANCE \
+                -e CC_OPTIMIZE_FOR_PERFORMANCE_O3
 
-    ### Enable bbr2
-    echo "Enabling bbr2"
-    echo "Disabling TCP_CONG_CUBIC..."
-    scripts/config -m TCP_CONG_CUBIC \
-        -d DEFAULT_CUBIC \
-        -e TCP_CONG_BBR2 \
-        -e DEFAULT_BBR2 \
-        --set-str DEFAULT_TCP_CONG bbr2
-    # BBR2 doesn't work properly with FQ_CODEL
-    echo "Disabling fq_codel by default..."
-    scripts/config -m NET_SCH_FQ_CODEL \
-        -e NET_SCH_FQ \
-        -d DEFAULT_FQ_CODEL \
-        -e DEFAULT_FQ \
-        --set-str DEFAULT_NET_SCH fq
+        ### Enable bbr2
+        echo "Enabling bbr2"
+        echo "Disabling TCP_CONG_CUBIC..."
+        scripts/config -m TCP_CONG_CUBIC \
+                -d DEFAULT_CUBIC \
+                -e TCP_CONG_BBR2 \
+                -e DEFAULT_BBR2 \
+                --set-str DEFAULT_TCP_CONG bbr2
+        # BBR2 doesn't work properly with FQ_CODEL
+        echo "Disabling fq_codel by default..."
+        scripts/config -m NET_SCH_FQ_CODEL \
+                -e NET_SCH_FQ \
+                -d DEFAULT_FQ_CODEL \
+                -e DEFAULT_FQ \
+                --set-str DEFAULT_NET_SCH fq
 
-    ### Select LRU config
-    echo "Enabling multigenerational LRU..."
-    scripts/config -e LRU_GEN \
-        -e LRU_GEN_ENABLED \
-        -d LRU_GEN_STATS
+        ### Select LRU config
+        echo "Enabling multigenerational LRU..."
+        scripts/config -e LRU_GEN \
+                -e LRU_GEN_ENABLED \
+                -d LRU_GEN_STATS
 
-    echo "Enable THP always..."
-    scripts/config -d TRANSPARENT_HUGEPAGE_MADVISE \
-        -e TRANSPARENT_HUGEPAGE_ALWAYS
+        echo "Enable THP always..."
+        scripts/config -d TRANSPARENT_HUGEPAGE_MADVISE \
+                -e TRANSPARENT_HUGEPAGE_ALWAYS
 
-    ### Enable LRNG
-    echo "Enabling Linux Random Number Generator ..."
-    scripts/config -d RANDOM_DEFAULT_IMPL \
-        -e LRNG \
-        -e LRNG_SHA256 \
-        -e LRNG_COMMON_DEV_IF \
-        -e LRNG_DRNG_ATOMIC \
-        -e LRNG_SYSCTL \
-        -e LRNG_RANDOM_IF \
-        -e LRNG_AIS2031_NTG1_SEEDING_STRATEGY \
-        -m LRNG_KCAPI_IF \
-        -m LRNG_HWRAND_IF \
-        -e LRNG_DEV_IF \
-        -e LRNG_RUNTIME_ES_CONFIG \
-        -e LRNG_IRQ_DFLT_TIMER_ES \
-        -d LRNG_SCHED_DFLT_TIMER_ES \
-        -e LRNG_TIMER_COMMON \
-        -d LRNG_COLLECTION_SIZE_256 \
-        -d LRNG_COLLECTION_SIZE_512 \
-        -e LRNG_COLLECTION_SIZE_1024 \
-        -d LRNG_COLLECTION_SIZE_2048 \
-        -d LRNG_COLLECTION_SIZE_4096 \
-        -d LRNG_COLLECTION_SIZE_8192 \
-        --set-val LRNG_COLLECTION_SIZE 1024 \
-        -e LRNG_HEALTH_TESTS \
-        --set-val LRNG_RCT_CUTOFF 31 \
-        --set-val LRNG_APT_CUTOFF 325 \
-        -e LRNG_IRQ \
-        -e LRNG_CONTINUOUS_COMPRESSION_ENABLED \
-        -d LRNG_CONTINUOUS_COMPRESSION_DISABLED \
-        -e LRNG_ENABLE_CONTINUOUS_COMPRESSION \
-        -e LRNG_SWITCHABLE_CONTINUOUS_COMPRESSION \
-        --set-val LRNG_IRQ_ENTROPY_RATE 256 \
-        -e LRNG_JENT \
-        --set-val LRNG_JENT_ENTROPY_RATE 16 \
-        -e LRNG_CPU \
-        --set-val LRNG_CPU_FULL_ENT_MULTIPLIER 1 \
-        --set-val LRNG_CPU_ENTROPY_RATE 8 \
-        -e LRNG_SCHED \
-        --set-val LRNG_SCHED_ENTROPY_RATE 4294967295 \
-        -e LRNG_DRNG_CHACHA20 \
-        -m LRNG_DRBG \
-        -m LRNG_DRNG_KCAPI \
-        -e LRNG_SWITCH \
-        -e LRNG_SWITCH_HASH \
-        -m LRNG_HASH_KCAPI \
-        -e LRNG_SWITCH_DRNG \
-        -m LRNG_SWITCH_DRBG \
-        -m LRNG_SWITCH_DRNG_KCAPI \
-        -e LRNG_DFLT_DRNG_CHACHA20 \
-        -d LRNG_DFLT_DRNG_DRBG \
-        -d LRNG_DFLT_DRNG_KCAPI \
-        -e LRNG_TESTING_MENU \
-        -d LRNG_RAW_HIRES_ENTROPY \
-        -d LRNG_RAW_JIFFIES_ENTROPY \
-        -d LRNG_RAW_IRQ_ENTROPY \
-        -d LRNG_RAW_RETIP_ENTROPY \
-        -d LRNG_RAW_REGS_ENTROPY \
-        -d LRNG_RAW_ARRAY \
-        -d LRNG_IRQ_PERF \
-        -d LRNG_RAW_SCHED_HIRES_ENTROPY \
-        -d LRNG_RAW_SCHED_PID_ENTROPY \
-        -d LRNG_RAW_SCHED_START_TIME_ENTROPY \
-        -d LRNG_RAW_SCHED_NVCSW_ENTROPY \
-        -d LRNG_SCHED_PERF \
-        -d LRNG_ACVT_HASH \
-        -d LRNG_RUNTIME_MAX_WO_RESEED_CONFIG \
-        -d LRNG_TEST_CPU_ES_COMPRESSION \
-        -e LRNG_SELFTEST \
-        -d LRNG_SELFTEST_PANIC \
-        -d LRNG_RUNTIME_FORCE_SEEDING_DISABLE
+        ### Enable LRNG
+        echo "Enabling Linux Random Number Generator ..."
+        scripts/config -d RANDOM_DEFAULT_IMPL \
+                -e LRNG \
+                -e LRNG_SHA256 \
+                -e LRNG_COMMON_DEV_IF \
+                -e LRNG_DRNG_ATOMIC \
+                -e LRNG_SYSCTL \
+                -e LRNG_RANDOM_IF \
+                -e LRNG_AIS2031_NTG1_SEEDING_STRATEGY \
+                -m LRNG_KCAPI_IF \
+                -m LRNG_HWRAND_IF \
+                -e LRNG_DEV_IF \
+                -e LRNG_RUNTIME_ES_CONFIG \
+                -e LRNG_IRQ_DFLT_TIMER_ES \
+                -d LRNG_SCHED_DFLT_TIMER_ES \
+                -e LRNG_TIMER_COMMON \
+                -d LRNG_COLLECTION_SIZE_256 \
+                -d LRNG_COLLECTION_SIZE_512 \
+                -e LRNG_COLLECTION_SIZE_1024 \
+                -d LRNG_COLLECTION_SIZE_2048 \
+                -d LRNG_COLLECTION_SIZE_4096 \
+                -d LRNG_COLLECTION_SIZE_8192 \
+                --set-val LRNG_COLLECTION_SIZE 1024 \
+                -e LRNG_HEALTH_TESTS \
+                --set-val LRNG_RCT_CUTOFF 31 \
+                --set-val LRNG_APT_CUTOFF 325 \
+                -e LRNG_IRQ \
+                -e LRNG_CONTINUOUS_COMPRESSION_ENABLED \
+                -d LRNG_CONTINUOUS_COMPRESSION_DISABLED \
+                -e LRNG_ENABLE_CONTINUOUS_COMPRESSION \
+                -e LRNG_SWITCHABLE_CONTINUOUS_COMPRESSION \
+                --set-val LRNG_IRQ_ENTROPY_RATE 256 \
+                -e LRNG_JENT \
+                --set-val LRNG_JENT_ENTROPY_RATE 16 \
+                -e LRNG_CPU \
+                --set-val LRNG_CPU_FULL_ENT_MULTIPLIER 1 \
+                --set-val LRNG_CPU_ENTROPY_RATE 8 \
+                -e LRNG_SCHED \
+                --set-val LRNG_SCHED_ENTROPY_RATE 4294967295 \
+                -e LRNG_DRNG_CHACHA20 \
+                -m LRNG_DRBG \
+                -m LRNG_DRNG_KCAPI \
+                -e LRNG_SWITCH \
+                -e LRNG_SWITCH_HASH \
+                -m LRNG_HASH_KCAPI \
+                -e LRNG_SWITCH_DRNG \
+                -m LRNG_SWITCH_DRBG \
+                -m LRNG_SWITCH_DRNG_KCAPI \
+                -e LRNG_DFLT_DRNG_CHACHA20 \
+                -d LRNG_DFLT_DRNG_DRBG \
+                -d LRNG_DFLT_DRNG_KCAPI \
+                -e LRNG_TESTING_MENU \
+                -d LRNG_RAW_HIRES_ENTROPY \
+                -d LRNG_RAW_JIFFIES_ENTROPY \
+                -d LRNG_RAW_IRQ_ENTROPY \
+                -d LRNG_RAW_RETIP_ENTROPY \
+                -d LRNG_RAW_REGS_ENTROPY \
+                -d LRNG_RAW_ARRAY \
+                -d LRNG_IRQ_PERF \
+                -d LRNG_RAW_SCHED_HIRES_ENTROPY \
+                -d LRNG_RAW_SCHED_PID_ENTROPY \
+                -d LRNG_RAW_SCHED_START_TIME_ENTROPY \
+                -d LRNG_RAW_SCHED_NVCSW_ENTROPY \
+                -d LRNG_SCHED_PERF \
+                -d LRNG_ACVT_HASH \
+                -d LRNG_RUNTIME_MAX_WO_RESEED_CONFIG \
+                -d LRNG_TEST_CPU_ES_COMPRESSION \
+                -e LRNG_SELFTEST \
+                -d LRNG_SELFTEST_PANIC \
+                -d LRNG_RUNTIME_FORCE_SEEDING_DISABLE
 
-    ### Enable zram/zswap ZSTD compression
-    echo "Enabling zram/swap ZSTD compression..."
-    scripts/config -d ZRAM_DEF_COMP_LZORLE \
-        -e ZRAM_DEF_COMP_ZSTD \
-        --set-str ZRAM_DEF_COMP zstd \
-        -d ZSWAP_COMPRESSOR_DEFAULT_LZ4 \
-        -e ZSWAP_COMPRESSOR_DEFAULT_ZSTD \
-        --set-str ZSWAP_COMPRESSOR_DEFAULT zstd
+        ### Enable zram/zswap ZSTD compression
+        echo "Enabling zram/swap ZSTD compression..."
+        scripts/config -d ZRAM_DEF_COMP_LZORLE \
+                -e ZRAM_DEF_COMP_ZSTD \
+                --set-str ZRAM_DEF_COMP zstd \
+                -d ZSWAP_COMPRESSOR_DEFAULT_LZ4 \
+                -e ZSWAP_COMPRESSOR_DEFAULT_ZSTD \
+                --set-str ZSWAP_COMPRESSOR_DEFAULT zstd
 
-### Disable DEBUG
-    scripts/config -d DEBUG_INFO \
-        -d DEBUG_INFO_BTF \
-        -d DEBUG_INFO_DWARF4 \
-        -d DEBUG_INFO_DWARF5 \
-        -d PAHOLE_HAS_SPLIT_BTF \
-        -d DEBUG_INFO_BTF_MODULES \
-        -d SLUB_DEBUG \
-        -d PM_DEBUG \
-        -d PM_ADVANCED_DEBUG \
-        -d PM_SLEEP_DEBUG \
-        -d ACPI_DEBUG \
-        -d SCHED_DEBUG \
-        -d LATENCYTOP \
-        -d DEBUG_PREEMPT
+        ### Disable DEBUG
+        scripts/config -d DEBUG_INFO \
+                -d DEBUG_INFO_BTF \
+                -d DEBUG_INFO_DWARF4 \
+                -d DEBUG_INFO_DWARF5 \
+                -d PAHOLE_HAS_SPLIT_BTF \
+                -d DEBUG_INFO_BTF_MODULES \
+                -d SLUB_DEBUG \
+                -d PM_DEBUG \
+                -d PM_ADVANCED_DEBUG \
+                -d PM_SLEEP_DEBUG \
+                -d ACPI_DEBUG \
+                -d SCHED_DEBUG \
+                -d LATENCYTOP \
+                -d DEBUG_PREEMPT
 
-    # disable CONFIG_DEBUG_INFO=y at build time otherwise memory usage blows up
-    # and can easily overwhelm a system with 32 GB of memory using a tmpfs build
-    # partition ... this was introduced by FS#66260, see:
-    # https://git.archlinux.org/svntogit/packages.git/commit/trunk?h=packages/linux&id=663b08666b269eeeeaafbafaee07fd03389ac8d7
-    scripts/config -d CONFIG_CGROUP_BPF
-    scripts/config -d CONFIG_BPF_LSM
-    scripts/config -d CONFIG_BPF_PRELOAD
-    scripts/config -d CONFIG_BPF_LIRC_MODE2
-    scripts/config -d CONFIG_BPF_KPROBE_OVERRIDE
+        # disable CONFIG_DEBUG_INFO=y at build time otherwise memory usage blows up
+        # and can easily overwhelm a system with 32 GB of memory using a tmpfs build
+        # partition ... this was introduced by FS#66260, see:
+        # https://git.archlinux.org/svntogit/packages.git/commit/trunk?h=packages/linux&id=663b08666b269eeeeaafbafaee07fd03389ac8d7
+        scripts/config -d CONFIG_CGROUP_BPF
+        scripts/config -d CONFIG_BPF_LSM
+        scripts/config -d CONFIG_BPF_PRELOAD
+        scripts/config -d CONFIG_BPF_LIRC_MODE2
+        scripts/config -d CONFIG_BPF_KPROBE_OVERRIDE
 
-    # https://bbs.archlinux.org/viewtopic.php?pid=1824594#p1824594
-    scripts/config -e CONFIG_PSI_DEFAULT_DISABLED
+        # https://bbs.archlinux.org/viewtopic.php?pid=1824594#p1824594
+        scripts/config -e CONFIG_PSI_DEFAULT_DISABLED
 
-    # FS#66613
-    # https://bugzilla.kernel.org/show_bug.cgi?id=207173#c6
-    scripts/config -d CONFIG_KVM_WERROR
-    # https://bbs.archlinux.org/viewtopic.php?pid=1863567#p1863567
-    scripts/config -d CONFIG_LATENCYTOP
+        # FS#66613
+        # https://bugzilla.kernel.org/show_bug.cgi?id=207173#c6
+        scripts/config -d CONFIG_KVM_WERROR
+        # https://bbs.archlinux.org/viewtopic.php?pid=1863567#p1863567
+        scripts/config -d CONFIG_LATENCYTOP
 
-    echo "Enable USER_NS_UNPRIVILEGED"
-    scripts/config -e USER_NS
-    #echo "Enable WINE FASTSYNC"
-    #scripts/config -e WINESYNC
+        echo "Enable USER_NS_UNPRIVILEGED"
+        scripts/config -e USER_NS
+        #echo "Enable WINE FASTSYNC"
+        #scripts/config -e WINESYNC
 
-    scripts/config -e CONFIG_MODULES
-    
-    echo $pkgdir/usr/lib/modules/$(<version)
+        scripts/config -e CONFIG_MODULES
 
-    ### Rewrite configuration
-    echo "Rewrite configuration..."
-    _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" prepare
-    _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" modules_prepare
+        echo $pkgdir/usr/lib/modules/$(<version)
 
-    cd ${srcdir}/"zfs"
-    ./autogen.sh
-    sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
-    ./configure KERNEL_LLVM=1 CFLAGS="-O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -std=gnu18" CC=clang LD=ld.lld --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
-        --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
-        --libexecdir=/usr/lib/zfs --with-config=kernel \
-        --enable-linux-builtin \
-        --with-linux=${srcdir}/$_srcname
-    ./copy-builtin ${srcdir}/${_srcname}
+        ### Rewrite configuration
+        echo "Rewrite configuration..."
+        _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" prepare
+        _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" modules_prepare
 
-    cd ${srcdir}/${_srcname}
-    scripts/config -e CONFIG_ZFS
+        cd ${srcdir}/"zfs"
+        ./autogen.sh
+        sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
+        ./configure KERNEL_LLVM=1 CFLAGS="-O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -std=gnu18" CC=clang LD=ld.lld --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
+                --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
+                --libexecdir=/usr/lib/zfs --with-config=kernel \
+                --enable-linux-builtin \
+                --with-linux=${srcdir}/$_srcname
+        ./copy-builtin ${srcdir}/${_srcname}
 
-    yes "" | _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" config >/dev/null
-    diff -u ../config .config || :
+        cd ${srcdir}/${_srcname}
+        scripts/config -e CONFIG_ZFS
 
-    ### Prepared version
-    echo "Prepared $pkgbase version $(<version)"
+        yes "" | _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" config >/dev/null
+        diff -u ../config .config || :
 
-    # make ${BUILD_FLAGS[*]} menuconfig
+        ### Prepared version
+        echo "Prepared $pkgbase version $(<version)"
 
-    ### Save configuration for later reuse
-    echo "Save configuration for later reuse..."
-    cat .config >"${startdir}/config-${pkgver}-${pkgrel}${pkgbase#linux}"
+        # make ${BUILD_FLAGS[*]} menuconfig
+
+        ### Save configuration for later reuse
+        echo "Save configuration for later reuse..."
+        cat .config >"${startdir}/config-${pkgver}-${pkgrel}${pkgbase#linux}"
 
 }
 
 build() {
-    cd ${srcdir}/${_srcname}
-    make ${BUILD_FLAGS[*]} all -j4
+        cd ${srcdir}/${_srcname}
+        make ${BUILD_FLAGS[*]} all -j4
 }
 
 _package() {
-    pkgdesc="The $pkgdesc kernel and modules"
-    depends=('coreutils' 'kmod' 'initramfs')
-    optdepends=('wireless-regdb: to set the correct wireless channels of your country'
+        pkgdesc="The $pkgdesc kernel and modules"
+        depends=('coreutils' 'kmod' 'initramfs')
+        optdepends=('wireless-regdb: to set the correct wireless channels of your country'
                 'linux-firmware: firmware images needed for some devices'
                 'modprobed-db: Keeps track of EVERY kernel module that has ever been probed - useful for those of us who make localmodconfig'
                 'uksmd: Userspace KSM helper daemon')
-    provides=(VIRTUALBOX-GUEST-MODULES WIREGUARD-MODULE KSMBD-MODULE UKSMD-BUILTIN)
+        provides=(VIRTUALBOX-GUEST-MODULES WIREGUARD-MODULE KSMBD-MODULE UKSMD-BUILTIN)
 
-    cd ${srcdir}/$_srcname
+        cd ${srcdir}/$_srcname
 
-    local modulesdir="$pkgdir/usr/lib/modules/$(<version)"
+        local modulesdir="$pkgdir/usr/lib/modules/$(<version)"
 
-    echo "Installing boot image..."
-    # systemd expects to find the kernel here to allow hibernation
-    # https://github.com/systemd/systemd/commit/edda44605f06a41fb86b7ab8128dcf99161d2344
-    install -Dm644 "$(_make_alt -s image_name)" "$modulesdir/vmlinuz"
+        echo "Installing boot image..."
+        # systemd expects to find the kernel here to allow hibernation
+        # https://github.com/systemd/systemd/commit/edda44605f06a41fb86b7ab8128dcf99161d2344
+        install -Dm644 "$(_make_alt -s image_name)" "$modulesdir/vmlinuz"
 
-    # Used by mkinitcpio to name the kernel
-    echo "$pkgbase" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
+        # Used by mkinitcpio to name the kernel
+        echo "$pkgbase" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
 
-    echo "Installing modules..."
-    _make_alt INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
-        DEPMOD=/doesnt/exist  modules_install  # Suppress depmod
+        echo "Installing modules..."
+        _make_alt INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
+                DEPMOD=/doesnt/exist modules_install # Suppress depmod
 
-    # remove build and source links
-    rm "$modulesdir"/{source,build}
+        # remove build and source links
+        rm "$modulesdir"/{source,build}
 }
 
 _package-headers() {
-    pkgdesc="Headers and scripts for building modules for the $pkgdesc kernel"
-    depends=('pahole' linux-${pkgsuffix} )
+        pkgdesc="Headers and scripts for building modules for the $pkgdesc kernel"
+        depends=('pahole' linux-${pkgsuffix})
 
-    cd ${srcdir}/${_srcname}
-    local builddir="$pkgdir/usr/lib/modules/$(<version)/build"
+        cd ${srcdir}/${_srcname}
+        local builddir="$pkgdir/usr/lib/modules/$(<version)/build"
 
-    echo "Installing build files..."
-    install -Dt "$builddir" -m644 .config Makefile Module.symvers System.map \
-        localversion.* version vmlinux
-    install -Dt "$builddir/kernel" -m644 kernel/Makefile
-    install -Dt "$builddir/arch/x86" -m644 arch/x86/Makefile
-    cp -t "$builddir" -a scripts
+        echo "Installing build files..."
+        install -Dt "$builddir" -m644 .config Makefile Module.symvers System.map \
+                localversion.* version vmlinux
+        install -Dt "$builddir/kernel" -m644 kernel/Makefile
+        install -Dt "$builddir/arch/x86" -m644 arch/x86/Makefile
+        cp -t "$builddir" -a scripts
 
-    # required when STACK_VALIDATION is enabled
-    install -Dt "$builddir/tools/objtool" tools/objtool/objtool
+        # required when STACK_VALIDATION is enabled
+        install -Dt "$builddir/tools/objtool" tools/objtool/objtool
 
-    # required when DEBUG_INFO_BTF_MODULES is enabled
-    if [ -f tools/bpf/resolve_btfids/resolve_btfids ]; then
-        install -Dt "$builddir/tools/bpf/resolve_btfids" tools/bpf/resolve_btfids/resolve_btfids
-    fi
+        # required when DEBUG_INFO_BTF_MODULES is enabled
+        if [ -f tools/bpf/resolve_btfids/resolve_btfids ]; then
+                install -Dt "$builddir/tools/bpf/resolve_btfids" tools/bpf/resolve_btfids/resolve_btfids
+        fi
 
-    echo "Installing headers..."
-    cp -t "$builddir" -a include
-    cp -t "$builddir/arch/x86" -a arch/x86/include
-    install -Dt "$builddir/arch/x86/kernel" -m644 arch/x86/kernel/asm-offsets.s
+        echo "Installing headers..."
+        cp -t "$builddir" -a include
+        cp -t "$builddir/arch/x86" -a arch/x86/include
+        install -Dt "$builddir/arch/x86/kernel" -m644 arch/x86/kernel/asm-offsets.s
 
-    install -Dt "$builddir/drivers/md" -m644 drivers/md/*.h
-    install -Dt "$builddir/net/mac80211" -m644 net/mac80211/*.h
+        install -Dt "$builddir/drivers/md" -m644 drivers/md/*.h
+        install -Dt "$builddir/net/mac80211" -m644 net/mac80211/*.h
 
-    # https://bugs.archlinux.org/task/13146
-    install -Dt "$builddir/drivers/media/i2c" -m644 drivers/media/i2c/msp3400-driver.h
+        # https://bugs.archlinux.org/task/13146
+        install -Dt "$builddir/drivers/media/i2c" -m644 drivers/media/i2c/msp3400-driver.h
 
-    # https://bugs.archlinux.org/task/20402
-    install -Dt "$builddir/drivers/media/usb/dvb-usb" -m644 drivers/media/usb/dvb-usb/*.h
-    install -Dt "$builddir/drivers/media/dvb-frontends" -m644 drivers/media/dvb-frontends/*.h
-    install -Dt "$builddir/drivers/media/tuners" -m644 drivers/media/tuners/*.h
+        # https://bugs.archlinux.org/task/20402
+        install -Dt "$builddir/drivers/media/usb/dvb-usb" -m644 drivers/media/usb/dvb-usb/*.h
+        install -Dt "$builddir/drivers/media/dvb-frontends" -m644 drivers/media/dvb-frontends/*.h
+        install -Dt "$builddir/drivers/media/tuners" -m644 drivers/media/tuners/*.h
 
-    # https://bugs.archlinux.org/task/71392
-    install -Dt "$builddir/drivers/iio/common/hid-sensors" -m644 drivers/iio/common/hid-sensors/*.h
+        # https://bugs.archlinux.org/task/71392
+        install -Dt "$builddir/drivers/iio/common/hid-sensors" -m644 drivers/iio/common/hid-sensors/*.h
 
-    echo "Installing KConfig files..."
-    find . -name 'Kconfig*' -exec install -Dm644 {} "$builddir/{}" \;
+        echo "Installing KConfig files..."
+        find . -name 'Kconfig*' -exec install -Dm644 {} "$builddir/{}" \;
 
-    echo "Removing unneeded architectures..."
-    local arch
-    for arch in "$builddir"/arch/*/; do
-        [[ $arch = */x86/ ]] && continue
-        echo "Removing $(basename "$arch")"
-        rm -r "$arch"
-    done
+        echo "Removing unneeded architectures..."
+        local arch
+        for arch in "$builddir"/arch/*/; do
+                [[ $arch = */x86/ ]] && continue
+                echo "Removing $(basename "$arch")"
+                rm -r "$arch"
+        done
 
-    echo "Removing documentation..."
-    rm -r "$builddir/Documentation"
+        echo "Removing documentation..."
+        rm -r "$builddir/Documentation"
 
-    echo "Removing broken symlinks..."
-    find -L "$builddir" -type l -printf 'Removing %P\n' -delete
+        echo "Removing broken symlinks..."
+        find -L "$builddir" -type l -printf 'Removing %P\n' -delete
 
-    echo "Removing loose objects..."
-    find "$builddir" -type f -name '*.o' -printf 'Removing %P\n' -delete
+        echo "Removing loose objects..."
+        find "$builddir" -type f -name '*.o' -printf 'Removing %P\n' -delete
 
-    echo "Stripping build tools..."
-    local file
-    while read -rd '' file; do
-        case "$(file -Sib "$file")" in
-            application/x-sharedlib\;*)      # Libraries (.so)
-                strip -v $STRIP_SHARED "$file" ;;
-            application/x-archive\;*)        # Libraries (.a)
-                strip -v $STRIP_STATIC "$file" ;;
-            application/x-executable\;*)     # Binaries
-                strip -v $STRIP_BINARIES "$file" ;;
-            application/x-pie-executable\;*) # Relocatable binaries
-                strip -v $STRIP_SHARED "$file" ;;
-        esac
-    done < <(find "$builddir" -type f -perm -u+x ! -name vmlinux -print0)
+        echo "Stripping build tools..."
+        local file
+        while read -rd '' file; do
+                case "$(file -Sib "$file")" in
+                application/x-sharedlib\;*) # Libraries (.so)
+                        strip -v $STRIP_SHARED "$file" ;;
+                application/x-archive\;*) # Libraries (.a)
+                        strip -v $STRIP_STATIC "$file" ;;
+                application/x-executable\;*) # Binaries
+                        strip -v $STRIP_BINARIES "$file" ;;
+                application/x-pie-executable\;*) # Relocatable binaries
+                        strip -v $STRIP_SHARED "$file" ;;
+                esac
+        done < <(find "$builddir" -type f -perm -u+x ! -name vmlinux -print0)
 
-    echo "Stripping vmlinux..."
-    strip -v $STRIP_STATIC "$builddir/vmlinux"
+        echo "Stripping vmlinux..."
+        strip -v $STRIP_STATIC "$builddir/vmlinux"
 
-    echo "Adding symlink..."
-    mkdir -p "$pkgdir/usr/src"
-    ln -sr "$builddir" "$pkgdir/usr/src/$pkgbase"
+        echo "Adding symlink..."
+        mkdir -p "$pkgdir/usr/src"
+        ln -sr "$builddir" "$pkgdir/usr/src/$pkgbase"
 }
 
 pkgname=("$pkgbase" "$pkgbase-headers")
 
 for _p in "${pkgname[@]}"; do
-    eval "package_$_p() {
+        eval "package_$_p() {
     $(declare -f "_package${_p#$pkgbase}")
-    _package${_p#$pkgbase}
-    }"
+        _package${_p#$pkgbase}
+}"
 done
 
-b3sums=()
-sha256sums=('e1ecc496efc48aaf25a6607a4b8e52d574d6f67a2b0aa1664087d301d3515ea4'
-            'SKIP'
-            'SKIP'
-            '71bec5cc2d5ca5d67f41d420c71ec0aabee21a25116f0a373586b6db1a521d06'
-            'a179688c3cb1166c6645942405a10979548c5dcb214aa47a996c17d1141fdfbe'
-            '2fad2c3ce176607915c234937aa825f887a987a6ae15bc35b8e302335ae3e9e0'
-            'a06671be0ea57693c09f9f96fabfdefd69153bdda2bf45d516825f145e6b75cf'
-            'd0a6500f56523a107e2cf00cdc03df5c950ed48c400fdd2b9f58dee9446c129a'
-            '9336de0c29a86db04d4d30c25d13b26025cdb2c2fa241f1c45753d081d711eda'
-            'dac915a8d58efc221f64a941e46d33977a355e382af3811c299b54781b06e228'
-            'SKIP')
+b2sums=('2ec02cd9c178c3cd46c01019dd36c9a5244e540ca4793d2715f14fdd3dd9fccde2cf129295cfe200206671f8db97169642177719ad2277513a9de65234cf9942'
+        'SKIP'
+        'SKIP'
+        'a6fb929054bcc09ad4ba75b145ebeeab42ccfb4678d2e820be2fe77afa78d5a9584b07ef6452cce82ca9fc44b78f3c42f96a0ca999dbbda974e3e6e35829e2db'
+        '0bd40791b5df303f88b23676403c678307fb5d49baa569c217cff12166ceac29560d7eb3cfa2e4c6cbb0433aa3d1715d5f1fa4f57f4e3c8c6788b82950f85537'
+        'b31c1b984422b7a748979b7f2902b1b3985c5853011ec4d0d06ea952a6c4ace8e5a15c4fced539b7aa2a8f1f49915f7f8b41eec25c6ea2fdffd91b16af43e037'
+        '137f469cf6931c2ea64393b808cf7d31497ef361170f624b105fc8920168354fa7ac27dcf5eaa929832ed7fd4a391c65561c7736619c740edb267f4fad50bc58'
+        'c1728c540b38eb023f6db6dce3b4235a6448f7f0df3952b9957873b4f6df6d2889f56e7d7a47196cd832efa100306ce07053bf6d95d2f86fb32541d706ad208e'
+        '1c8577b4cfe643718752402975225a6446d8f3da8ed5f101b2f0842edbe14663dbd622c6b4dc90620d266b6670198b46caf1431cefda5ada15d219af11813260'
+        'ac30ac338184c63e5fdb2a748401f1591ce3fe5183cc620dd37786226aa7ae284f24772b066646ff4482b0b7c37299e2744ad461200f0ce1a83cd991199fe602'
+        'SKIP'
+        '05460ff603ecc48967f38bc65465d368cf5e8cca9467b4f33fe2065bed58007fc8129766805f1729a4062f72c5f02870606deee886df552ddde9e90375b11527'
+        'b1eb4f284ee6fcd6664d1d2a6224473b43b6bc852402882453acbf5ce2e6c7609934e8e18ff5326ee5ed4bbea2a3e75422a0bf575e7ab76cc31646bf2dc52b54'
+        '90f94f205d85d711f2d226f77f1d1705e0449dc477db81342daf3044ee2073ff1b1274276021e096ffe2bf500de5a7ca97e739c0923c6c0433bcb09667c9698d'
+        '270dcbca0a2779ad48237295ab0f74811b3591444453833db1ae6690fb7587148ee28169cfbcb0b9c1434c6a62862cb26754cd2a7a25b1eceb56722a921c8bda'
+        '70c1fddb2021ecb0a07dd08c98e79361ada79ef8ee25d4a695215f00acc2b54f7f1e09f580df5cfd9b1f4b73d868a9089a351e1ec5e8143c273cbe5095ac90be'
+        'a64b166c84f995dd9ea765027c04a03f220084d2e5405fa507ad91f193063fa51d77d81edcd995198ca53abb2f70ab7905695fc63d125d322bcf9c503e758183'
+        '032bcc909e24b4748ffd3c420f09136d324abef384d2286a76819bfe8e7b33e4596108fbf4ad60e47091aeeb0e2e32879a1c214f837854f9e35d3d46b61f34a1'
+        'e36cd3d16ebcc522b46b29aef2c9b8a1026412a54fd79024376cf6968d177848731fb29e2c620e691102dff0385bb89a00dde370c82f2b3da709c5f11c1b2885')
