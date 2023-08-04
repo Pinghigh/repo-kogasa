@@ -145,21 +145,23 @@ prepare() {
         scripts/config -d CC_OPTIMIZE_FOR_PERFORMANCE \
                 -e CC_OPTIMIZE_FOR_PERFORMANCE_O3
 
-        ### Enable bbr2
-        echo "Enabling bbr2"
+        ### Enable bbr3
+        echo "Enabling bbr3"
         echo "Disabling TCP_CONG_CUBIC..."
+         echo "Disabling TCP_CONG_CUBIC..."
         scripts/config -m TCP_CONG_CUBIC \
-                -d DEFAULT_CUBIC \
-                -e TCP_CONG_BBR2 \
-                -e DEFAULT_BBR2 \
-                --set-str DEFAULT_TCP_CONG bbr2
-        # BBR2 doesn't work properly with FQ_CODEL
+            -d DEFAULT_CUBIC \
+            -e TCP_CONG_BBR \
+            -e DEFAULT_BBR \
+            --set-str DEFAULT_TCP_CONG bbr
+
+        # BBR3 doesn't work properly with FQ_CODEL
         echo "Disabling fq_codel by default..."
         scripts/config -m NET_SCH_FQ_CODEL \
-                -e NET_SCH_FQ \
-                -d DEFAULT_FQ_CODEL \
-                -e DEFAULT_FQ \
-                --set-str DEFAULT_NET_SCH fq
+            -e NET_SCH_FQ \
+            -d DEFAULT_FQ_CODEL \
+            -e DEFAULT_FQ \
+            --set-str DEFAULT_NET_SCH fq
 
         ### Select LRU config
         echo "Enabling multigenerational LRU..."
