@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
 _major=6.4
-_minor=7
+_minor=8
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -332,7 +332,7 @@ prepare() {
 
 build() {
         cd ${srcdir}/${_srcname}
-        make ${BUILD_FLAGS[*]} all -j4
+        make ${BUILD_FLAGS[*]} all -j3
 }
 
 _package() {
