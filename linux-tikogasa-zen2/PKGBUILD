@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
 _major=6.4
-_minor=8
+_minor=9
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -26,17 +26,15 @@ source=(
         #"ld.lld"
         "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
         # "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
-        "clearlinux-linux::git+https://github.com/clearlinux-pkgs/linux"
-        "linux-patches::git+https://github.com/xanmod/linux-patches"
         "config"
         "test.c"
         "0001-makefile-clang-polly-ms178.patch"
         "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
-        "${_patchsource}/all/0001-cachyos-base-all.patch"
+        "${_patchsource}/all/0001-cachyos-base-all-dev.patch"
         # "${_patchsource}/misc/0001-bcachefs.patch"
         "${_patchsource}/sched/0001-EEVDF.patch"
         "${_patchsource}/sched/0001-bore-eevdf.patch"
-        # "${_patchsource}/misc/0001-lrng.patch"
+        "${_patchsource}/misc/0001-lrng.patch"
         "git+https://github.com/openzfs/zfs.git#commit=4a104ac0476e7a370d5076c97c0b9bc081499fd0"
 
         # -ck patches
@@ -61,8 +59,7 @@ _make_alt() {
 
 prepare() {
         # clang ${srcdir}/test.c -O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -std=gnu18 ${srcdir}/test.out
-        cp clearlinux-linux/*.patch ./
-        cp linux-patches/linux-${_major}.y-xanmod/xanmod/*.patch ./
+
         cd ${srcdir}/$_srcname
 
         echo "Setting version..."
@@ -105,6 +102,10 @@ prepare() {
                 -d LTO_CLANG_FULL \
                 -e LTO_CLANG_THIN \
                 -e HAVE_GCC_PLUGINS
+
+        # https://github.com/CachyOS/linux-cachyos/issues/150
+        echo "Disabling CONFIG_CPU_SRSO..."
+        scripts/config -d CPU_SRSO
 
         ### Select tick rate
         echo "Setting tick rate to 2k Hz..."
@@ -322,7 +323,7 @@ prepare() {
         ### Prepared version
         echo "Prepared $pkgbase version $(<version)"
 
-        # make ${BUILD_FLAGS[*]} menuconfig
+        make ${BUILD_FLAGS[*]} nconfig
 
         ### Save configuration for later reuse
         echo "Save configuration for later reuse..."
