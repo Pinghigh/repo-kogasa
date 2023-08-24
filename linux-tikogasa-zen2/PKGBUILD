@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
 _major=6.4
-_minor=10
+_minor=12
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -17,7 +17,7 @@ arch=('x86_64' 'x86_64_v3')
 url="https://github.com/CachyOS/linux-cachyos"
 license=('GPL2')
 options=('!strip')
-makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod python git llvm llvm-libs clang lld polly make patch python kmod)
+makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod git llvm llvm-libs clang lld polly make patch python kmod)
 BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld "
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
 _ck_patchsource="https://raw.githubusercontent.com/graysky2/linux-patches/master/linux-${_major}.y/ck-hrtimer"
@@ -454,15 +454,15 @@ for _p in "${pkgname[@]}"; do
 }"
 done
 
-b2sums=('700017448073f63880739efed3f60baba18116500737419e305b2b5e0d2532e2d40a41368c773772cba437236bc1edda85c8f16ca23a945c754e283a30184a6d'
+b2sums=('0d8b6e447a7fe390b44967ab8dc2e116de29b6fac15a91fe8398d091f5803984495dea595d53938e75f0213b5268bbdb63a86284463552c8e59ffb02cb98ce17'
         '6de79fe2f9827c954fc2ce4dc5559e032a5ee61b48a8424229bcbc7163da76ab7ed84067ff30bc68100f774320b2b63b23bb280d93ffadeb33b2deda958b03b6'
         '0bd40791b5df303f88b23676403c678307fb5d49baa569c217cff12166ceac29560d7eb3cfa2e4c6cbb0433aa3d1715d5f1fa4f57f4e3c8c6788b82950f85537'
         'b31c1b984422b7a748979b7f2902b1b3985c5853011ec4d0d06ea952a6c4ace8e5a15c4fced539b7aa2a8f1f49915f7f8b41eec25c6ea2fdffd91b16af43e037'
         '137f469cf6931c2ea64393b808cf7d31497ef361170f624b105fc8920168354fa7ac27dcf5eaa929832ed7fd4a391c65561c7736619c740edb267f4fad50bc58'
-        '3ec64cda731868642c3e502e09991d2b30779e1fb6194e00b2a3fbfc9516c8cf3f86c1c3475c5fa11a2e71e208748d4c693b688c7fd20690486ad28a61111f0e'
-        '11d5923512051c46477aab7ceddaa1fef962c8d503975e34e660acb1a9c7040b147a935ca3f6f5f7e5cadb37e32a1cd25ddd8fda00c403d6364f9612ceebdc1f'
-        '893d96b3f582a753cd9821ee78028ef923fbf1c46f45c1c26f76ec02715ae89cdd536c1ebf95d54fb4d4ef4da4f1560f6e6136fd528489f703e41950c03a6dc3'
-        '6918e9dfac9e2d48b32ed5e9fc4f5d485783163f48e0c4da8b2795b9f2911960b931d86cdae3bb182af89f59fc03195de96a21540b92b9fa66dd46688f726f6e'
+        '7c5a7b0c6a8a81c9e995db034067c81e5815d110ac9be8629017dd893c64ab312b3ea52509b3cede79acb6de3c119be1abae6705ec773e8119927c8249297c27'
+        '5123ed89b7355e7a491717002853e23f7f28bc9c3c30c91f50b53d17c963bff47ccdcb1659a34bded887c4cf3b4dbcb7f152ab979ff3fa7210e9b969c70cdf50'
+        '4de1c6b029e3147dedd5ea0c02946c2f7559b02bc31ffdbaf065e742bb54597d51b08c92c1c2f8225fd984399e058fc11b9ff16494d58b50a74bab4ef392f2d4'
+        '0f500f2c0b4754e5acfcf046b72c407b6076baaf5325485e304348760dd78f84da10c98491c321408c2c80915b3d8f89d415a25f75d48245ff96ba47a407e803'
         'SKIP'
         '05460ff603ecc48967f38bc65465d368cf5e8cca9467b4f33fe2065bed58007fc8129766805f1729a4062f72c5f02870606deee886df552ddde9e90375b11527'
         'b1eb4f284ee6fcd6664d1d2a6224473b43b6bc852402882453acbf5ce2e6c7609934e8e18ff5326ee5ed4bbea2a3e75422a0bf575e7ab76cc31646bf2dc52b54'
