@@ -9,8 +9,7 @@ chmod -R a+rw .
 echo -e '\n[cachyos]\nServer = https://mirror.cachyos.org/repo/x86_64/$repo\nSigLevel = Never\n\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n\n[archlinuxcn]\nServer = https://mirrors.xtom.us/archlinuxcn/$arch\nServer = https://mirrors.ocf.berkeley.edu/archlinuxcn/$arch\nServer = https://mirrors.aliyun.com/archlinuxcn/$arch\nSigLevel = Never\n' | tee -a /etc/pacman.conf
 
 pacman-key --init
-pacman -Sy --noconfirm && pacman -S --noconfirm archlinuxcn-keyring
-pacman -Syu --noconfirm paru makepkg pacman-contrib
+pacman -Syu --noconfirm paru pacman-contrib
 if [ ! -z "$INPUT_PREINSTALLPKGS" ]; then
     pacman -Syu --noconfirm "$INPUT_PREINSTALLPKGS"
 fi
