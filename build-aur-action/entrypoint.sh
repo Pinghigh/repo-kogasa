@@ -10,7 +10,7 @@ echo -e '\n[cachyos]\nServer = https://mirror.cachyos.org/repo/x86_64/$repo\nSig
 
 pacman-key --init
 pacman -Sy --noconfirm && pacman -S --noconfirm archlinuxcn-keyring
-pacman -Syu --noconfirm paru git
+pacman -Syu --noconfirm paru makepkg pacman-contrib
 if [ ! -z "$INPUT_PREINSTALLPKGS" ]; then
     pacman -Syu --noconfirm "$INPUT_PREINSTALLPKGS"
 fi
