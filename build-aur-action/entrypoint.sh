@@ -16,4 +16,5 @@ fi
 
 git clone https://aur.archlinux.org/$pkgname.git
 cd $pkgname
-sudo --set-home -u builder paru -U --noconfirm
+chown -R builder .
+sudo -H -u builder paru -U --noconfirm
