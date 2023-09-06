@@ -6,10 +6,7 @@ useradd builder -m
 echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 chmod -R a+rw .
 
-cat << EOM >> /etc/pacman.conf
-[archlinuxcn]
-Server = https://repo.archlinuxcn.org/x86_64
-EOM
+echo -e '\n[cachyos]\nServer = https://mirror.cachyos.org/repo/x86_64/$repo\nSigLevel = Never\n\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n\n[archlinuxcn]\nServer = https://mirrors.xtom.us/archlinuxcn/$arch\nServer = https://mirrors.ocf.berkeley.edu/archlinuxcn/$arch\nServer = https://mirrors.aliyun.com/archlinuxcn/$arch\nSigLevel = Never\n' | tee -a /etc/pacman.conf
 
 pacman-key --init
 pacman -Sy --noconfirm && pacman -S --noconfirm archlinuxcn-keyring

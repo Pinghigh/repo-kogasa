@@ -9,7 +9,7 @@ jobs:
   buildAUR:
     strategy:
       matrix:
-        repos: [linuxqq-nt-bwrap]
+        repos: [jdk17-openj9-bin]
         # include:
         #   - repos: git-cola
         #     preinstall-pkgs: "at-spi2-core"
