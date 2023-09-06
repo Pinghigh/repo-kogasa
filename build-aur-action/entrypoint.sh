@@ -18,6 +18,6 @@ if [ ! -z "$INPUT_PREINSTALLPKGS" ]; then
     pacman -Syu --noconfirm "$INPUT_PREINSTALLPKGS"
 fi
 
-git clone $pkgname
+git clone https://aur.archlinux.org/$pkgname.git
 cd $pkgname
 sudo --set-home -u builder paru -U --noconfirm
