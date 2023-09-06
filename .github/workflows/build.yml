@@ -6,73 +6,73 @@ on:
   #   - cron:  '1 */8 * * *'
 
 jobs:
-  # buildAUR:
-  #   strategy:
-  #     matrix:
-  #       repos: [linuxqq-new]
-  #       # include:
-  #       #   - repos: git-cola
-  #       #     preinstall-pkgs: "at-spi2-core"
-  #       #   - repos: realesrgan-ncnn-vulkan
-  #       #     preinstall-pkgs: "vulkan-intel"
-  #       #   - repos: python-octodns
-  #       #     preinstall-pkgs: "python-pip"
-
-  #     fail-fast: false
-      
-  #   runs-on: ubuntu-latest
-    
-  #   steps:
-  #   - uses: actions/checkout@v3
-    
-  #   - uses: ./build-aur-action
-  #     with:
-  #       repo-name: ${{ matrix.repos }}
-  #       preinstallPkgs: ${{ matrix.preinstall-pkgs }}
-    
-  #   - uses: actions/upload-artifact@v3
-  #     with:
-  #       path: ./*/*.pkg.tar.zst
-  #       name: ${{ matrix.repos }}
-  #       if-no-files-found: error
-        
-  #   # - uses: ncipollo/release-action@v1
-  #   #   with:
-  #   #     allowUpdates: true
-  #   #     tag: "packages"
-  #   #     artifacts: "./*/*.zst"
-  #   #     token: ${{ secrets.GITHUB_TOKEN }}
-
-  buildNonAUR:
+  buildAUR:
     strategy:
       matrix:
-        PKGBUILDs: [linux-tikogasa-zen2]
+        repos: [linuxqq-nt-bwrap]
+        # include:
+        #   - repos: git-cola
+        #     preinstall-pkgs: "at-spi2-core"
+        #   - repos: realesrgan-ncnn-vulkan
+        #     preinstall-pkgs: "vulkan-intel"
+        #   - repos: python-octodns
+        #     preinstall-pkgs: "python-pip"
 
       fail-fast: false
       
     runs-on: ubuntu-latest
-
+    
     steps:
-      - uses: actions/checkout@v3
+    - uses: actions/checkout@v3
+    
+    - uses: ./build-aur-action
+      with:
+        repo-name: ${{ matrix.repos }}
+        preinstallPkgs: ${{ matrix.preinstall-pkgs }}
+    
+    - uses: actions/upload-artifact@v3
+      with:
+        path: ./*/*.pkg.tar.zst
+        name: ${{ matrix.repos }}
+        if-no-files-found: error
+        
+    # - uses: ncipollo/release-action@v1
+    #   with:
+    #     allowUpdates: true
+    #     tag: "packages"
+    #     artifacts: "./*/*.zst"
+    #     token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Non-AUR packages
-        id: makepkg
-        uses: Pinghigh/pkgbuild-action@v5.1
-        with:
-          pkgdir: ${{ matrix.PKGBUILDs }}
-          makepkgArgs: --skippgpcheck
-          
-      - uses: actions/upload-artifact@v3
-        with:
-          path: ./*/*.pkg.tar.zst
-          if-no-files-found: error
+  # buildNonAUR:
+  #   strategy:
+  #     matrix:
+  #       PKGBUILDs: [linux-tikogasa-zen2]
+
+  #     fail-fast: false
       
-      # - uses: ncipollo/release-action@v1
-      #   with:
-      #     allowUpdates: true
-      #     tag: "packages"
-      #     artifacts: ${{ steps.makepkg.outputs.pkgfile0 }}
-      #     token: ${{ secrets.GITHUB_TOKEN }}
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - uses: actions/checkout@v3
+
+  #     - name: Build Non-AUR packages
+  #       id: makepkg
+  #       uses: Pinghigh/pkgbuild-action@v5.1
+  #       with:
+  #         pkgdir: ${{ matrix.PKGBUILDs }}
+  #         makepkgArgs: --skippgpcheck
+          
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         path: ./*/*.pkg.tar.zst
+  #         if-no-files-found: error
+      
+  #     # - uses: ncipollo/release-action@v1
+  #     #   with:
+  #     #     allowUpdates: true
+  #     #     tag: "packages"
+  #     #     artifacts: ${{ steps.makepkg.outputs.pkgfile0 }}
+  #     #     token: ${{ secrets.GITHUB_TOKEN }}
       
 
 
@@ -95,7 +95,7 @@ jobs:
           RCLONE_ONEDRIVE_TOKEN: ${{ secrets.RCLONE_ONEDRIVE_TOKEN }}
           RCLONE_ONEDRIVE_DRIVE_ID: ${{ secrets.RCLONE_ONEDRIVE_DRIVE_ID }}
           RCLONE_ONEDRIVE_DRIVE_TYPE: business
-          dest_path: /RepoTikogasa
+          dest_path: /repo-kogasa
           repo_name: repo-kogasa
           gpg-privatekey: ${{ secrets.GPG_PRIVATE_KEY }}
           local_path: ./
