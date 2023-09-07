@@ -12,13 +12,13 @@ console.log(`包名称: ${pkgName}
 目标版本: ${newVer}`);
 
 // 计算一下 arch
-if (ARCH === "any") {
-    console.log(
-        "::set-output name=arch::x86_64 i686 aarch64 loongarch64 riscv64"
-    );
-} else {
-    console.log(`::set-output name=arch::${ARCHIN}`);
-}
+// if (ARCH === "any") {
+//     console.log(
+//         "::set-output name=arch::x86_64 i686 aarch64 loongarch64 riscv64"
+//     );
+// } else {
+//     console.log(`::set-output name=arch::${ARCHIN}`);
+// }
 
 for (const subdir of subdirs) {
     const content = fs.readFileSync(

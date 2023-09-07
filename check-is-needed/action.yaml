@@ -28,7 +28,7 @@ runs:
       shell: bash
       run: |
         mkdir pkgdb
-        wget https://repo.tibrella.top/repo-kogasa.files.tar.gz && tar -xzf files.tar.gz -C pkgdb || echo '仓库数据库不存在'
+        wget https://repo.tibrella.top/repo-kogasa.files.tar.gz && tar -xzf repo-kogasa.files.tar.gz -C pkgdb || echo '仓库数据库不存在'
 
     - name: 获取包名称
       shell: bash
