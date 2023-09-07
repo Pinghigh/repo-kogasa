@@ -1,0 +1,60 @@
+name: 检查包是否已存在
+inputs:
+  package-name:
+    required: true
+outputs:
+  is-needed:
+    description: true 或者 false 字符串
+    value: ${{ steps.check-db.outputs.is-needed }}
+  old-package-name:
+    description: 在包构建流程结束时需要删除的旧包名
+    value: ${{ steps.check-db.outputs.old-package-name }}
+  arch:
+    description: 包里面标称的架构，下面的步骤用来检测 any
+    value: ${{ steps.check-db.outputs.arch }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v2.3.0
+
+    - name: 下载 PKGBUILD
+      shell: bash
+      run: |
+        if [[ ${{ inputs.package-name }} != ./* ]];then
+          wget https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=${{ inputs.package-name }} -O PKGBUILD
+        fi
+
+    - name: 下载并解压仓库数据库
+      shell: bash
+      run: |
+        mkdir pkgdb
+        wget https://repo.tibrella.top/repo-kogasa.files.tar.gz && tar -xzf files.tar.gz -C pkgdb || echo '仓库数据库不存在'
+
+    - name: 获取包名称
+      shell: bash
+      id: get-name
+      run: |
+        if [[ ${{ inputs.package-name }} == ./* ]];then
+          source ${{ inputs.package-name }}/PKGBUILD
+        else
+          source PKGBUILD
+        fi
+        echo ::set-output name=pkgname::$pkgname
+        echo ::set-output name=pkgbase::$pkgbase
+        echo ::set-output name=pkgver::$pkgver
+        echo ::set-output name=pkgrel::$pkgrel
+        echo ::set-output name=epoch::$epoch
+        echo ::set-output name=arch::$arch
+
+    - name: 检查数据库
+      shell: bash
+      run: node ${{ github.action_path }}/check-db.js
+      id: check-db
+      env:
+        PKGNAME: ${{ steps.get-name.outputs.pkgname }}
+        PKGBASE: ${{ steps.get-name.outputs.pkgbase }}
+        PKGVER: ${{ steps.get-name.outputs.pkgver }}
+        PKGREL: ${{ steps.get-name.outputs.pkgrel }}
+        EPOCH: ${{ steps.get-name.outputs.epoch }}
+        ARCH: ${{ steps.get-name.outputs.arch }}
+        ARCHIN: ${{ inputs.arch }}

@@ -10,13 +10,6 @@ jobs:
     strategy:
       matrix:
         repos: [jdk17-openj9-bin]
-        # include:
-        #   - repos: git-cola
-        #     preinstall-pkgs: "at-spi2-core"
-        #   - repos: realesrgan-ncnn-vulkan
-        #     preinstall-pkgs: "vulkan-intel"
-        #   - repos: python-octodns
-        #     preinstall-pkgs: "python-pip"
 
       fail-fast: false
       
@@ -24,8 +17,17 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
+
+    - name: 检查包是否需要更新
+      id: is-needed
+      uses: ./check-is-needed
+      with:
+        package-name: ${{ matrix.repos }}
+
     
-    - uses: ./build-aur-action
+    - name: Paru 构建包
+      uses: ./build-aur-action
+      if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
       with:
         repo-name: ${{ matrix.repos }}
         preinstallPkgs: ${{ matrix.preinstall-pkgs }}
