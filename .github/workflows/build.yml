@@ -75,8 +75,8 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
         if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
-          path: ./*/*.pkg.tar.zst
-          if-no-files-found: error
+        path: ./*/*.pkg.tar.zst
+        if-no-files-found: error
       
       # - uses: ncipollo/release-action@v1
       #   with:
