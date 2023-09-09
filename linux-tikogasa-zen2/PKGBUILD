@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
-_major=6.4
-_minor=12
+_major=6.5
+_minor=2
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -13,11 +13,11 @@ _srcname=linux-${_stable}
 pkgdesc='Linux BORE-EEVDF scheduler Kernel with compile-improvements and patches from some disrobutions for amd zen2 cpu'
 pkgrel=1
 _kernver=$pkgver-$pkgrel
-arch=('x86_64' 'x86_64_v3')
+arch=('x86_64')
 url="https://github.com/CachyOS/linux-cachyos"
 license=('GPL2')
 options=('!strip')
-makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod git llvm llvm-libs clang lld polly make patch python kmod)
+makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod git llvm llvm-libs clang lld polly make patch python kmod mold)
 BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld "
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
 _ck_patchsource="https://raw.githubusercontent.com/graysky2/linux-patches/master/linux-${_major}.y/ck-hrtimer"
@@ -28,14 +28,13 @@ source=(
         # "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
         "config"
         "test.c"
-        "0001-makefile-clang-polly-ms178.patch"
+        "0001-opt-add-some-compilation-flags.patch"
         "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
-        # "${_patchsource}/misc/0001-bcachefs.patch"
-        "${_patchsource}/sched/0001-EEVDF.patch"
+        "${_patchsource}/sched/0001-EEVDF-cachy.patch"
         "${_patchsource}/sched/0001-bore-eevdf.patch"
         "${_patchsource}/misc/0001-lrng.patch"
-        "git+https://github.com/openzfs/zfs.git#commit=4a104ac0476e7a370d5076c97c0b9bc081499fd0"
+        "git+https://github.com/openzfs/zfs.git#commit=3602775330b332a88b1cdf1e8daa8a31c524a3de"
 
         # -ck patches
         ${_ck_patchsource}/0001-hrtimer-Create-highres-timeout-variants-of-schedule_.patch
@@ -48,7 +47,7 @@ source=(
         ${_ck_patchsource}/0008-clockevents-hrtimer-Make-hrtimer-granularity-and-min.patch
 )
 
-export KBUILD_BUILD_HOST=cleararch
+export KBUILD_BUILD_HOST=kogasa
 export KBUILD_BUILD_USER=$pkgbase
 export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
@@ -65,9 +64,9 @@ prepare() {
         echo "Setting version..."
         echo "-$pkgrel" >localversion.10-pkgrel
         echo "${pkgbase#linux}" >localversion.20-pkgname
-        make ${BUILD_FLAGS[*]} defconfig
+        make ${BUILD_FLAGS[*]} defconfig -j3
         make ${BUILD_FLAGS[*]} -s kernelrelease >version
-        make ${BUILD_FLAGS[*]} mrproper
+        make ${BUILD_FLAGS[*]} mrproper -j3
 
         local src
         for src in "${source[@]}"; do
@@ -297,13 +296,13 @@ prepare() {
 
         ### Rewrite configuration
         echo "Rewrite configuration..."
-        _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" prepare
-        _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" modules_prepare
+        _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" prepare -j3
+        _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" modules_prepare -j3
 
         cd ${srcdir}/"zfs"
         ./autogen.sh
         sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
-        ./configure KERNEL_LLVM=1 CFLAGS="-O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -std=gnu18" CC=clang LD=ld.lld --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
+        ./configure KERNEL_LLVM=1 CFLAGS="-O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -mllvm -polly-position=early -fopenmp -mllvm -polly-tiling=true -mllvm -polly-prevect-width=256 -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -mllvm -polly-enable-delicm=true -mllvm -extra-vectorizer-passes -mllvm -enable-cond-stores-vec -mllvm -slp-vectorize-hor-store -mllvm -enable-loopinterchange -mllvm -enable-loop-distribute -mllvm -enable-unroll-and-jam -mllvm -enable-loop-flatten -mllvm -interleave-small-loop-scalar-reduction -mllvm -unroll-runtime-multi-exit -mllvm -aggressive-ext-opt -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -mharden-sls=none -fomit-frame-pointer -mprefer-vector-width=256 -std=gnu18" CC=clang LD=ld.lld LDFLAGS="-fuse-ld=mold" --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
                 --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
                 --libexecdir=/usr/lib/zfs --with-config=kernel \
                 --enable-linux-builtin \
@@ -454,21 +453,21 @@ for _p in "${pkgname[@]}"; do
 }"
 done
 
-b2sums=('0d8b6e447a7fe390b44967ab8dc2e116de29b6fac15a91fe8398d091f5803984495dea595d53938e75f0213b5268bbdb63a86284463552c8e59ffb02cb98ce17'
-        '6de79fe2f9827c954fc2ce4dc5559e032a5ee61b48a8424229bcbc7163da76ab7ed84067ff30bc68100f774320b2b63b23bb280d93ffadeb33b2deda958b03b6'
-        '0bd40791b5df303f88b23676403c678307fb5d49baa569c217cff12166ceac29560d7eb3cfa2e4c6cbb0433aa3d1715d5f1fa4f57f4e3c8c6788b82950f85537'
-        'b31c1b984422b7a748979b7f2902b1b3985c5853011ec4d0d06ea952a6c4ace8e5a15c4fced539b7aa2a8f1f49915f7f8b41eec25c6ea2fdffd91b16af43e037'
-        '137f469cf6931c2ea64393b808cf7d31497ef361170f624b105fc8920168354fa7ac27dcf5eaa929832ed7fd4a391c65561c7736619c740edb267f4fad50bc58'
-        '7c5a7b0c6a8a81c9e995db034067c81e5815d110ac9be8629017dd893c64ab312b3ea52509b3cede79acb6de3c119be1abae6705ec773e8119927c8249297c27'
-        '5123ed89b7355e7a491717002853e23f7f28bc9c3c30c91f50b53d17c963bff47ccdcb1659a34bded887c4cf3b4dbcb7f152ab979ff3fa7210e9b969c70cdf50'
-        '4de1c6b029e3147dedd5ea0c02946c2f7559b02bc31ffdbaf065e742bb54597d51b08c92c1c2f8225fd984399e058fc11b9ff16494d58b50a74bab4ef392f2d4'
-        '0f500f2c0b4754e5acfcf046b72c407b6076baaf5325485e304348760dd78f84da10c98491c321408c2c80915b3d8f89d415a25f75d48245ff96ba47a407e803'
+b2sums=('74a4f998987780001e924e28f8a3f585cd50da9d87d120bcb33fe1fd4fccccc2301fbc3c84c62e914e4694b5eb138e33cacda515db51d5a3997d114154449be3'
+        'c675a334980f437a9d9549f9491cfc1095dafb5606b7149f894398e9c05cc06e8f78ce25d0e462565a0fb31f417dcdb0de15c1f5c8a010c76a5f000d5a662682'
+        'fdd890ebb65402a14731e8640976b3525f2b9516c0598300a0f200eb9e21a1e58095c001fd14dfb775e9f1e0211744fa4ae12cddf41158c0297670670ae36e76'
+        'c498070ba8343db590bcf8456a19c56565d9f461e2aca60ce47becef5657776339bec7ed1eb0daeeceb80c222f437a3071859cece7b71d2ea0c3947fd3e6a131'
+        '46e0c0b326b580af6da240747f1e475cdd5838064452f641b2b0e1595cf3a8ddd7c06520c8ce9609fe18a59593f9981ff0b27b47401705a5f70d6c2496e613cb'
+        '84d38cd79a1680bff4f84acd692d948d8ef5e798dca4dd3e14927b0f6c6295956e7ef583daa7749e212037bbb6b5d17eec01be8fd31966549bae0a90cb5d63e5'
+        'db78ba180ea95c77f04d3d3dc99d07c35c0e9efcfd2baf997e485b721adefb5684bf62185436353f7faceba1d2271b5c1c430fcad9a441657bfabdf74d36917b'
+        '21bd89028133e9a25878e5841808194c1aa742afe0700e669bc5a024091e04b87b23566e96b451bbad235a33d828f5853e75dab0ec677ad9a16c6406c2ced850'
+        'f65dacee60028c2944f014db082a308b7b833e3b3a2beb66823ba71a6b22117377aee31c8e77496b341f2008928c318781e0f65ec156998782571c51a0b05580'
         'SKIP'
-        '05460ff603ecc48967f38bc65465d368cf5e8cca9467b4f33fe2065bed58007fc8129766805f1729a4062f72c5f02870606deee886df552ddde9e90375b11527'
-        'b1eb4f284ee6fcd6664d1d2a6224473b43b6bc852402882453acbf5ce2e6c7609934e8e18ff5326ee5ed4bbea2a3e75422a0bf575e7ab76cc31646bf2dc52b54'
-        '90f94f205d85d711f2d226f77f1d1705e0449dc477db81342daf3044ee2073ff1b1274276021e096ffe2bf500de5a7ca97e739c0923c6c0433bcb09667c9698d'
-        '270dcbca0a2779ad48237295ab0f74811b3591444453833db1ae6690fb7587148ee28169cfbcb0b9c1434c6a62862cb26754cd2a7a25b1eceb56722a921c8bda'
-        '70c1fddb2021ecb0a07dd08c98e79361ada79ef8ee25d4a695215f00acc2b54f7f1e09f580df5cfd9b1f4b73d868a9089a351e1ec5e8143c273cbe5095ac90be'
-        'a64b166c84f995dd9ea765027c04a03f220084d2e5405fa507ad91f193063fa51d77d81edcd995198ca53abb2f70ab7905695fc63d125d322bcf9c503e758183'
-        '032bcc909e24b4748ffd3c420f09136d324abef384d2286a76819bfe8e7b33e4596108fbf4ad60e47091aeeb0e2e32879a1c214f837854f9e35d3d46b61f34a1'
-        'e36cd3d16ebcc522b46b29aef2c9b8a1026412a54fd79024376cf6968d177848731fb29e2c620e691102dff0385bb89a00dde370c82f2b3da709c5f11c1b2885')
+        '4bca23e34cd74d956e1a15232096d02c4ae384053adab39f6d33fd3c1e1ff3b158e3be242722528e224a08d938d587293e6abd8384ee5f23fb90f72c63ff98b1'
+        '0475701c2175f174805cc35473b0bd6c24fd1144e589716ee4be1ad26d7980504555d375d228ffd2ed95c340aa87525a25521fa909c83acd1ba1d572ab4b8cfb'
+        'e8bc98241eb7fa60564a677b9cd736b85e1de610608757b4c4c97bd3cdb0bbe897c8e938a86a765976d587d97adc17e0863a8fa3248e1465d6dcb95371aeba13'
+        'e5a47fd2664a06a3a598c763018502165d840356ef8ba058e501a33cd05039369e9af6b1469ac195d9238c5da336288cc27fb4c762bcfd98158642ce1619a673'
+        '20ddc92f1800af48cc6c8d717120331be9d5046b3523075f19cadea2579919946a29a48a1927de7d906c2e0bb5f96499fecbb8cbf5beae8a980afc4d215aff8f'
+        'ab3109803b8efd522592e0ad51b56e2f7ddf15f42816b754cd4401d3583668a108d797d477b0bc8d35f2b665bf0333912bc799e21114e8b247ccaf0ba9ce4789'
+        '8d963273edf927d72aeec559252eac8fc848c643909fcf50a279803a091f16105bbf6b053cb49056485f8445353857dc34d076b98113cfd00142ccae640ba8fc'
+        '707ff9b04c2214bed43d0a720fef92cad8840666f6752edcc8aba2997d4375fe8d9f6e999660718eb5c3eacb31f601a5c62460da139842ec0921320dbec8a7c2')

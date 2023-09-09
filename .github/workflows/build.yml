@@ -2,14 +2,14 @@ name: BUILD
 
 on:
   push:
-  # schedule:
-  #   - cron:  '1 */8 * * *'
+  schedule:
+    - cron:  '0/1 0 0 1/1 * ? '
 
 jobs:
   buildAUR:
     strategy:
       matrix:
-        repos: [jdk17-openj9-bin, ffmpeg-amd-full]
+        pkgs: [jdk17-openj9-bin, linuxqq-nt-bwrap, otf-apple-fonts, ttf-harmonyos-sans, vscodium-insiders]
 
       fail-fast: false
       
@@ -22,14 +22,14 @@ jobs:
       id: is-needed
       uses: ./check-is-needed
       with:
-        package-name: ${{ matrix.repos }}
+        package-name: ${{ matrix.pkgs }}
 
     
     - name: Paru 构建包
       uses: ./build-aur-action
       if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
       with:
-        repo-name: ${{ matrix.repos }}
+        repo-name: ${{ matrix.pkgs }}
         preinstallPkgs: ${{ matrix.preinstall-pkgs }}
         makepkgProfilePath: ./makepkg.conf
     
@@ -37,7 +37,7 @@ jobs:
       if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
       with:
         path: ./*/*.pkg.tar.zst
-        name: ${{ matrix.repos }}
+        name: ${{ matrix.pkgs }}
         if-no-files-found: error
         
     # - uses: ncipollo/release-action@v1
@@ -47,36 +47,44 @@ jobs:
     #     artifacts: "./*/*.zst"
     #     token: ${{ secrets.GITHUB_TOKEN }}
 
-  # buildNonAUR:
-  #   strategy:
-  #     matrix:
-  #       PKGBUILDs: [linux-tikogasa-zen2]
+  buildNonAUR:
+    strategy:
+      matrix:
+        pkgs: [linux-tikogasa-zen2]
 
-  #     fail-fast: false
+      fail-fast: false
       
-  #   runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - uses: actions/checkout@v3
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Build Non-AUR packages
-  #       id: makepkg
-  #       uses: Pinghigh/pkgbuild-action@v5.1
-  #       with:
-  #         pkgdir: ${{ matrix.PKGBUILDs }}
-  #         makepkgArgs: --skippgpcheck
+      - name: 检查包是否需要更新
+        id: is-needed
+        uses: ./check-is-needed
+        with:
+          package-name: ${{ matrix.pkgs }}
+
+      - name: Build Non-AUR packages
+        id: makepkg
+        if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
+        uses: Pinghigh/pkgbuild-action@latest
+        with:
+          pkgdir: ${{ matrix.pkgs }}
+          # makepkgArgs: --skippgpcheck
           
-  #     - uses: actions/upload-artifact@v3
-  #       with:
-  #         path: ./*/*.pkg.tar.zst
-  #         if-no-files-found: error
+      - uses: actions/upload-artifact@v3
+        with:
+        if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
+          path: ./*/*.pkg.tar.zst
+          if-no-files-found: error
       
-  #     # - uses: ncipollo/release-action@v1
-  #     #   with:
-  #     #     allowUpdates: true
-  #     #     tag: "packages"
-  #     #     artifacts: ${{ steps.makepkg.outputs.pkgfile0 }}
-  #     #     token: ${{ secrets.GITHUB_TOKEN }}
+      # - uses: ncipollo/release-action@v1
+      #   with:
+      #     allowUpdates: true
+      #     tag: "packages"
+      #     artifacts: ${{ steps.makepkg.outputs.pkgfile0 }}
+      #     token: ${{ secrets.GITHUB_TOKEN }}
       
 
 
@@ -84,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     # needs: [buildNonAUR]
-    needs: [buildAUR]
+    needs: [buildAUR, buildNonAUR]
 
     steps:
       - uses: actions/checkout@v3

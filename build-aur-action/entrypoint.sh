@@ -12,12 +12,11 @@ pacman-key --init
 pacman -Syu --noconfirm paru pacman-contrib mold
 
 chown -R builder .
+chown -R builder /github/home/.config
 
 if test -z "${INPUT_MAKEPKGPROFILEPATH}";then
-	echo "Didn't provide makepkg profile path. Skipped."
+	sudo -H -u builder paru -S --noconfirm --clonedir . $pkgname
 else
-	sudo -H -u builder install -D /etc/makepkg.conf ~/.config/pacman/makepkg.conf # 怕出权限问题所以先传统方式安装
-	sudo -H -u cat ${INPUT_MAKEPKGPROFILEPATH} > ~/.config/pacman/makepkg.conf
+    chmod -R a+rw ${INPUT_MAKEPKGPROFILEPATH}
+	sudo -H -u builder paru -S --noconfirm --clonedir . $pkgname -mflags "--config ${INPUT_MAKEPKGPROFILEPATH}"
 fi
-
-sudo -H -u builder paru -S --noconfirm --clonedir . $pkgname
