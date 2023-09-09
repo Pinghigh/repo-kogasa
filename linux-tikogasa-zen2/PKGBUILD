@@ -27,7 +27,6 @@ source=(
         "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
         # "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
         "config"
-        "test.c"
         "0001-opt-add-some-compilation-flags.patch"
         "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
@@ -455,7 +454,6 @@ done
 
 b2sums=('74a4f998987780001e924e28f8a3f585cd50da9d87d120bcb33fe1fd4fccccc2301fbc3c84c62e914e4694b5eb138e33cacda515db51d5a3997d114154449be3'
         'c675a334980f437a9d9549f9491cfc1095dafb5606b7149f894398e9c05cc06e8f78ce25d0e462565a0fb31f417dcdb0de15c1f5c8a010c76a5f000d5a662682'
-        'fdd890ebb65402a14731e8640976b3525f2b9516c0598300a0f200eb9e21a1e58095c001fd14dfb775e9f1e0211744fa4ae12cddf41158c0297670670ae36e76'
         'c498070ba8343db590bcf8456a19c56565d9f461e2aca60ce47becef5657776339bec7ed1eb0daeeceb80c222f437a3071859cece7b71d2ea0c3947fd3e6a131'
         '46e0c0b326b580af6da240747f1e475cdd5838064452f641b2b0e1595cf3a8ddd7c06520c8ce9609fe18a59593f9981ff0b27b47401705a5f70d6c2496e613cb'
         '84d38cd79a1680bff4f84acd692d948d8ef5e798dca4dd3e14927b0f6c6295956e7ef583daa7749e212037bbb6b5d17eec01be8fd31966549bae0a90cb5d63e5'
