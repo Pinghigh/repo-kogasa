@@ -68,7 +68,7 @@ jobs:
       - name: Build Non-AUR packages
         id: makepkg
         if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
-        uses: Pinghigh/pkgbuild-action@latest
+        uses: Pinghigh/pkgbuild-action@v5.2.beta.2
         with:
           pkgdir: ${{ matrix.pkgs }}
           
@@ -90,7 +90,6 @@ jobs:
   uploadToOneDrive:      
     runs-on: ubuntu-latest
     if: always()
-    # needs: [buildNonAUR]
     needs: [buildAUR, buildNonAUR]
 
     steps:

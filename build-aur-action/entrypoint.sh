@@ -12,11 +12,10 @@ pacman-key --init
 pacman -Syu --noconfirm paru pacman-contrib mold
 
 chown -R builder .
-chown -R builder /github/home/.config
 
 if test -z "${INPUT_MAKEPKGPROFILEPATH}";then
 	sudo -H -u builder paru -S --noconfirm --clonedir . $pkgname
 else
     chmod -R a+rw ${INPUT_MAKEPKGPROFILEPATH}
-	sudo -H -u builder paru -S --noconfirm --clonedir . $pkgname -mflags "--config ${INPUT_MAKEPKGPROFILEPATH}"
+	sudo -H -u builder paru -S --noconfirm --clonedir . $pkgname -mflags \"--config ${INPUT_MAKEPKGPROFILEPATH}\"
 fi
