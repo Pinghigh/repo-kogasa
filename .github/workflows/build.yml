@@ -9,7 +9,7 @@ jobs:
   buildAUR:
     strategy:
       matrix:
-        repos: [jdk17-openj9-bin]
+        repos: [jdk17-openj9-bin, ffmpeg-amd-full]
 
       fail-fast: false
       
@@ -31,8 +31,10 @@ jobs:
       with:
         repo-name: ${{ matrix.repos }}
         preinstallPkgs: ${{ matrix.preinstall-pkgs }}
+        makepkgProfilePath: ./makepkg.conf
     
     - uses: actions/upload-artifact@v3
+      if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
       with:
         path: ./*/*.pkg.tar.zst
         name: ${{ matrix.repos }}

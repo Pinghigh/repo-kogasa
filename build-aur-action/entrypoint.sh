@@ -9,12 +9,13 @@ chmod -R a+rw .
 echo -e '\n[cachyos]\nServer = https://mirror.cachyos.org/repo/x86_64/$repo\nSigLevel = Never\n\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n\n[archlinuxcn]\nServer = https://mirrors.xtom.us/archlinuxcn/$arch\nServer = https://mirrors.ocf.berkeley.edu/archlinuxcn/$arch\nServer = https://mirrors.aliyun.com/archlinuxcn/$arch\nSigLevel = Never\n' | tee -a /etc/pacman.conf
 
 pacman-key --init
-pacman -Syu --noconfirm paru pacman-contrib
-if [ ! -z "$INPUT_PREINSTALLPKGS" ]; then
-    pacman -Syu --noconfirm "$INPUT_PREINSTALLPKGS"
+pacman -Syu --noconfirm paru pacman-contrib mold
+
+if test -z "${INPUT_MAKEPKGPROFILEPATH}";then
+	echo "Didn't provide makepkg profile path. Skipped."
+else
+	sudo -H -u builder install -D /etc/makepkg.conf ~/.config/pacman/makepkg.conf # 怕出权限问题所以先传统方式安装
+	sudo -H -u cat ${INPUT_MAKEPKGPROFILEPATH} > ~/.config/pacman/makepkg.conf
 fi
 
-git clone https://aur.archlinux.org/$pkgname.git
-cd $pkgname
-chown -R builder .
-sudo -H -u builder paru -U --noconfirm
+sudo -H -u builder paru -S --noconfirm --clonedir . $pkgname

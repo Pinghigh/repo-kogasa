@@ -10,6 +10,10 @@ inputs:
     description: 'packages need install before build, separated by space'
     required: false
     default: ""
+  makepkgProfilePath:
+    description: "path of makepkg.conf"
+    required: false
+    default: ""
 runs:
   using: 'docker'
   image: 'Dockerfile'
