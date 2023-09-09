@@ -18,7 +18,7 @@ url="https://github.com/CachyOS/linux-cachyos"
 license=('GPL2')
 options=('!strip')
 makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod git llvm llvm-libs clang lld polly make patch python kmod mold)
-BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.mold "
+BUILD_FLAGS="LLVM=1 LLVM_IAS=1 CC=clang CXX=clang++ LD=ld.lld "
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
 _ck_patchsource="https://raw.githubusercontent.com/graysky2/linux-patches/master/linux-${_major}.y/ck-hrtimer"
 source=(
@@ -301,7 +301,7 @@ prepare() {
         cd ${srcdir}/"zfs"
         ./autogen.sh
         sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
-        ./configure KERNEL_LLVM=1 CFLAGS="-O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -mllvm -polly-position=early -fopenmp -mllvm -polly-tiling=true -mllvm -polly-prevect-width=256 -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -mllvm -polly-enable-delicm=true -mllvm -extra-vectorizer-passes -mllvm -enable-cond-stores-vec -mllvm -slp-vectorize-hor-store -mllvm -enable-loopinterchange -mllvm -enable-loop-distribute -mllvm -enable-unroll-and-jam -mllvm -enable-loop-flatten -mllvm -interleave-small-loop-scalar-reduction -mllvm -unroll-runtime-multi-exit -mllvm -aggressive-ext-opt -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -mharden-sls=none -fomit-frame-pointer -mprefer-vector-width=256 -std=gnu18" CC=clang LD=ld.mold --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
+        ./configure KERNEL_LLVM=1 CFLAGS="-O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -mllvm -polly-position=early -fopenmp -mllvm -polly-tiling=true -mllvm -polly-prevect-width=256 -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -mllvm -polly-enable-delicm=true -mllvm -extra-vectorizer-passes -mllvm -enable-cond-stores-vec -mllvm -slp-vectorize-hor-store -mllvm -enable-loopinterchange -mllvm -enable-loop-distribute -mllvm -enable-unroll-and-jam -mllvm -enable-loop-flatten -mllvm -interleave-small-loop-scalar-reduction -mllvm -unroll-runtime-multi-exit -mllvm -aggressive-ext-opt -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -mharden-sls=none -fomit-frame-pointer -mprefer-vector-width=256 -std=gnu18" CC=clang LD=ld.lld LDFLAGS="-fuse-ld=mold" --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
                 --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
                 --libexecdir=/usr/lib/zfs --with-config=kernel \
                 --enable-linux-builtin \
@@ -454,7 +454,7 @@ done
 
 b2sums=('74a4f998987780001e924e28f8a3f585cd50da9d87d120bcb33fe1fd4fccccc2301fbc3c84c62e914e4694b5eb138e33cacda515db51d5a3997d114154449be3'
         'c675a334980f437a9d9549f9491cfc1095dafb5606b7149f894398e9c05cc06e8f78ce25d0e462565a0fb31f417dcdb0de15c1f5c8a010c76a5f000d5a662682'
-        'c498070ba8343db590bcf8456a19c56565d9f461e2aca60ce47becef5657776339bec7ed1eb0daeeceb80c222f437a3071859cece7b71d2ea0c3947fd3e6a131'
+        '3e98732c6b10217f475d201f3ea67cf5ac2b559b7788372dd82704e2a98d3a09ab2d1e3d37a7d2914087553c9b4e9f904c2b30e9d7d415673a62912e6f773444'
         '46e0c0b326b580af6da240747f1e475cdd5838064452f641b2b0e1595cf3a8ddd7c06520c8ce9609fe18a59593f9981ff0b27b47401705a5f70d6c2496e613cb'
         '84d38cd79a1680bff4f84acd692d948d8ef5e798dca4dd3e14927b0f6c6295956e7ef583daa7749e212037bbb6b5d17eec01be8fd31966549bae0a90cb5d63e5'
         'db78ba180ea95c77f04d3d3dc99d07c35c0e9efcfd2baf997e485b721adefb5684bf62185436353f7faceba1d2271b5c1c430fcad9a441657bfabdf74d36917b'
