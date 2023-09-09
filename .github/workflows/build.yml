@@ -71,7 +71,6 @@ jobs:
         uses: Pinghigh/pkgbuild-action@latest
         with:
           pkgdir: ${{ matrix.pkgs }}
-          # makepkgArgs: --skippgpcheck
           
       - uses: actions/upload-artifact@v3
         with:
