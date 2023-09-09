@@ -68,7 +68,7 @@ jobs:
       - name: Build Non-AUR packages
         id: makepkg
         if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
-        uses: Pinghigh/pkgbuild-action@v5.2.beta.2
+        uses: Pinghigh/pkgbuild-action@v5.2.beta.3
         with:
           pkgdir: ${{ matrix.pkgs }}
           
