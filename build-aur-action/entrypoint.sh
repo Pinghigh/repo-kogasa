@@ -13,6 +13,9 @@ pacman -Syu --noconfirm paru pacman-contrib mold
 
 chown -R builder .
 
+ls -a .
+ls -a .. 
+
 if test -z "${INPUT_MAKEPKGPROFILEPATH}";then
 	sudo -H -u builder paru -S --noconfirm --clonedir . $pkgname
 else
