@@ -20,7 +20,7 @@ runs:
     - name: 下载 PKGBUILD
       shell: bash
       run: |
-        if [[ ${{ inputs.package-name }} != ./* ]];then
+        if [ ! -d ${{ inputs.package-name }} ];then
           wget --tries=5 https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=${{ inputs.package-name }} -O PKGBUILD
         fi
 
