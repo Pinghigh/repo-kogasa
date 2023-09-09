@@ -34,7 +34,7 @@ runs:
       shell: bash
       id: get-name
       run: |
-        if [[ ${{ inputs.package-name }} == ./* ]];then
+        if [ -d ${{ inputs.package-name }} ];then
           source ${{ inputs.package-name }}/PKGBUILD
         else
           source PKGBUILD
