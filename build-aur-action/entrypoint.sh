@@ -11,6 +11,8 @@ echo -e '\n[cachyos]\nServer = https://mirror.cachyos.org/repo/x86_64/$repo\nSig
 pacman-key --init
 pacman -Syu --noconfirm paru pacman-contrib mold
 
+chown -R builder .
+
 if test -z "${INPUT_MAKEPKGPROFILEPATH}";then
 	echo "Didn't provide makepkg profile path. Skipped."
 else
