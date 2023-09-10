@@ -1,2 +1,6 @@
-`public.key` 是我的公钥，`add_gpg_key.sh` 一共两个命令，一个是添加该公钥，一个是签名。
-直接下载这个目录下的两个文件，执行 `sudo bash add_gpg_key.sh` 即可。
+```shell
+wget https://github.com/Pinghigh/repo-kogasa/raw/main/gpgkey/public.key
+
+pacman-key --add ./public.key
+pacman-key --lsign-key 73A920637963E7A875694AB77B4F18C3CA122D2D
+```

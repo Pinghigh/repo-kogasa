@@ -286,8 +286,9 @@ prepare() {
 
         echo "Enable USER_NS_UNPRIVILEGED"
         scripts/config -e USER_NS
-        #echo "Enable WINE FASTSYNC"
-        #scripts/config -e WINESYNC
+
+        # echo "Enable WINE FASTSYNC"
+        # scripts/config -e WINESYNC
 
         scripts/config -e CONFIG_MODULES
 
