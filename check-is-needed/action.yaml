@@ -21,14 +21,14 @@ runs:
       shell: bash
       run: |
         if [ ! -d ${{ inputs.package-name }} ];then
-          wget --tries=5 https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=${{ inputs.package-name }} -O PKGBUILD
+          curl --retry 3 --retry-delay 3 --url https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=${{ inputs.package-name }} -o PKGBUILD -L
         fi
 
     - name: 下载并解压仓库数据库
       shell: bash
       run: |
         mkdir pkgdb
-        wget --tries=5 https://repo.tibrella.top/repo-kogasa.files.tar.gz && tar -xzf repo-kogasa.files.tar.gz -C pkgdb || echo '仓库数据库不存在'
+        curl --retry 3 --retry-delay 3 --url https://repo.tibrella.top/repo-kogasa.files.tar.gz -o repo-kogasa.files.tar.gz -L && tar -xzf repo-kogasa.files.tar.gz -C pkgdb || echo '仓库数据库不存在'
 
     - name: 获取包名称
       shell: bash
