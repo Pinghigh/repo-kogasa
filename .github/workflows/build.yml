@@ -72,7 +72,8 @@ jobs:
         with:
           pkgdir: ${{ matrix.pkgs }}
           makepkgProfilePath: ../makepkg-no-fuse-ld.conf
-          
+          makepkgArgs: --skipchecksums
+
       - uses: actions/upload-artifact@v3
         if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
         with:
