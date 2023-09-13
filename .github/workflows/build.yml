@@ -3,13 +3,13 @@ name: BUILD
 on:
   push:
   schedule:
-    - cron:  '0 1 * * *'
+    - cron:  '0 22 * * *'
 
 jobs:
   buildAUR:
     strategy:
       matrix:
-        pkgs: [jdk17-openj9-bin, linuxqq-nt-bwrap, otf-apple-fonts, ttf-harmonyos-sans, vscodium-insiders]
+        pkgs: [jdk17-openj9-bin, linuxqq-nt-bwrap, otf-apple-fonts, ttf-harmonyos-sans, vscodium-insiders, git-credential-manager-core-extras, capt-src]
 
       fail-fast: false
       
