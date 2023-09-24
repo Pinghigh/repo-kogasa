@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
 _major=6.5
-_minor=2
+_minor=5
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -24,8 +24,8 @@ _ck_patchsource="https://raw.githubusercontent.com/graysky2/linux-patches/master
 source=(
         #"clang"
         #"ld.lld"
-        "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
-        # "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+        #"https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+         "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
         "config"
         "0001-opt-add-some-compilation-flags.patch"
         "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
@@ -33,7 +33,7 @@ source=(
         "${_patchsource}/sched/0001-EEVDF-cachy.patch"
         "${_patchsource}/sched/0001-bore-eevdf.patch"
         "${_patchsource}/misc/0001-lrng.patch"
-        "git+https://github.com/openzfs/zfs.git#commit=3602775330b332a88b1cdf1e8daa8a31c524a3de"
+        "git+https://github.com/openzfs/zfs.git#commit=2e2a46e0a597b3ee606ea7dc5bc527459077322f"
 
         # -ck patches
         ${_ck_patchsource}/0001-hrtimer-Create-highres-timeout-variants-of-schedule_.patch
@@ -50,11 +50,6 @@ export KBUILD_BUILD_HOST=kogasa
 export KBUILD_BUILD_USER=$pkgbase
 export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
-_make_alt() {
-        test -s version
-        make KERNELRELEASE="$(<version)" "$@"
-}
-
 prepare() {
         # clang ${srcdir}/test.c -O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -fopenmp -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -fcf-protection=none -std=gnu18 ${srcdir}/test.out
 
@@ -63,14 +58,12 @@ prepare() {
         echo "Setting version..."
         echo "-$pkgrel" >localversion.10-pkgrel
         echo "${pkgbase#linux}" >localversion.20-pkgname
-        make ${BUILD_FLAGS[*]} defconfig -j3
-        make ${BUILD_FLAGS[*]} -s kernelrelease >version
-        make ${BUILD_FLAGS[*]} mrproper -j3
 
         local src
         for src in "${source[@]}"; do
                 src="${src%%::*}"
                 src="${src##*/}"
+                src="${src%.zst}"
                 [[ $src = *.patch ]] || continue
                 echo "Applying patch $src..."
                 patch -Np1 <"../$src"
@@ -292,12 +285,12 @@ prepare() {
 
         scripts/config -e CONFIG_MODULES
 
-        echo $pkgdir/usr/lib/modules/$(<version)
+        #echo $pkgdir/usr/lib/modules/$(<version)
 
         ### Rewrite configuration
         echo "Rewrite configuration..."
-        _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" prepare -j3
-        _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" modules_prepare -j3
+        make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" prepare -j3
+        make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" modules_prepare -j3
 
         cd ${srcdir}/"zfs"
         ./autogen.sh
@@ -312,13 +305,14 @@ prepare() {
         cd ${srcdir}/${_srcname}
         scripts/config -e CONFIG_ZFS
 
-        yes "" | _make_alt ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" config >/dev/null
+        yes "" | make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" config >/dev/null
         diff -u ../config .config || :
 
         ### Prepared version
+        make -s kernelrelease > version
         echo "Prepared $pkgbase version $(<version)"
 
-        # make ${BUILD_FLAGS[*]} nconfig
+        make ${BUILD_FLAGS[*]} nconfig
 
         ### Save configuration for later reuse
         echo "Save configuration for later reuse..."
@@ -347,13 +341,13 @@ _package() {
         echo "Installing boot image..."
         # systemd expects to find the kernel here to allow hibernation
         # https://github.com/systemd/systemd/commit/edda44605f06a41fb86b7ab8128dcf99161d2344
-        install -Dm644 "$(_make_alt -s image_name)" "$modulesdir/vmlinuz"
+        install -Dm644 "$(make -s image_name)" "$modulesdir/vmlinuz"
 
         # Used by mkinitcpio to name the kernel
         echo "$pkgbase" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
 
         echo "Installing modules..."
-        _make_alt INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
+        make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
                 DEPMOD=/doesnt/exist modules_install # Suppress depmod
 
         # remove build and source links
@@ -453,13 +447,13 @@ for _p in "${pkgname[@]}"; do
 }"
 done
 
-b2sums=('74a4f998987780001e924e28f8a3f585cd50da9d87d120bcb33fe1fd4fccccc2301fbc3c84c62e914e4694b5eb138e33cacda515db51d5a3997d114154449be3'
-        'c675a334980f437a9d9549f9491cfc1095dafb5606b7149f894398e9c05cc06e8f78ce25d0e462565a0fb31f417dcdb0de15c1f5c8a010c76a5f000d5a662682'
+b2sums=('2152bdcd8799b89612e76c1b3794313f981e08eda23c0150e56297a07f326c85f2a7a08106eb4e4d502b2134ed69e4344263fe6a2b398af5b5d7ccd018c0899b'
+        '949250285cc674b03554b9cf6da8a35824c2ea87875f6a118178bd6e22f84fc2a7e0ce30b421583e5a050f6a8cf2bfb9083b984f9db2a72023018f1f0dbda117'
         '58e1369fd712c2922d7764eb483bc2e8f9ab240ab4dd60c0ac50b3c53d42b3da209a74bd90fb2afe593f19f5bd202a9f1a534913c9bd4ddf7b70b4bc907fb486'
         '46e0c0b326b580af6da240747f1e475cdd5838064452f641b2b0e1595cf3a8ddd7c06520c8ce9609fe18a59593f9981ff0b27b47401705a5f70d6c2496e613cb'
-        '84d38cd79a1680bff4f84acd692d948d8ef5e798dca4dd3e14927b0f6c6295956e7ef583daa7749e212037bbb6b5d17eec01be8fd31966549bae0a90cb5d63e5'
-        'db78ba180ea95c77f04d3d3dc99d07c35c0e9efcfd2baf997e485b721adefb5684bf62185436353f7faceba1d2271b5c1c430fcad9a441657bfabdf74d36917b'
-        '21bd89028133e9a25878e5841808194c1aa742afe0700e669bc5a024091e04b87b23566e96b451bbad235a33d828f5853e75dab0ec677ad9a16c6406c2ced850'
+        '335b337c7317974c871536476d21c9c157ec1dd6d6d6e1ad788cf3da384193d57c868347f1cadb57ad4e76035a8bae5311ac6adfa71f3d5634e37483b23fff89'
+        'bf40d76a15dce5f4bc3c1d1d9e2aa8fc0fcd7308d89e1e2490f8049a98de150892172b29fea4f7667c0347259221ba4358eaa4fe0f6664832198afa1f111f7ab'
+        'f9975c36670c09511b96854ebf29cc5053dc7e4d07d0782205b99cf653c49f4a62f88a5f6e61e538d5a0d474b19a02a62afc4dc060c8fc10ec92555ab3fa40e0'
         'f65dacee60028c2944f014db082a308b7b833e3b3a2beb66823ba71a6b22117377aee31c8e77496b341f2008928c318781e0f65ec156998782571c51a0b05580'
         'SKIP'
         '4bca23e34cd74d956e1a15232096d02c4ae384053adab39f6d33fd3c1e1ff3b158e3be242722528e224a08d938d587293e6abd8384ee5f23fb90f72c63ff98b1'
