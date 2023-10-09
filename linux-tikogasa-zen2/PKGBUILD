@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
 _major=6.5
-_minor=5
+_minor=6
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -33,7 +33,7 @@ source=(
         "${_patchsource}/sched/0001-EEVDF-cachy.patch"
         "${_patchsource}/sched/0001-bore-eevdf.patch"
         "${_patchsource}/misc/0001-lrng.patch"
-        "git+https://github.com/openzfs/zfs.git#commit=2e2a46e0a597b3ee606ea7dc5bc527459077322f"
+        "git+https://github.com/openzfs/zfs.git#branch=zfs-2.2-release"
 
         # -ck patches
         ${_ck_patchsource}/0001-hrtimer-Create-highres-timeout-variants-of-schedule_.patch
@@ -447,13 +447,13 @@ for _p in "${pkgname[@]}"; do
 }"
 done
 
-b2sums=('2152bdcd8799b89612e76c1b3794313f981e08eda23c0150e56297a07f326c85f2a7a08106eb4e4d502b2134ed69e4344263fe6a2b398af5b5d7ccd018c0899b'
+b2sums=('6fec33a0ee1700694c43c2271263d23408f3ad53f71200717ebd3843dd0aecb5235a058439e63e304da276978f1e4148ae1aac78a22166b2ca236b137a406c0f'
         'd65a77cfabe415143e52e2f7a62869b9b7d693e86a1193a08b9fe3dc6e39f13c5377e5db8c158e8426d4d1e3a57a44e183386fb47163f3c518768ad1c9bd6b63'
         '58e1369fd712c2922d7764eb483bc2e8f9ab240ab4dd60c0ac50b3c53d42b3da209a74bd90fb2afe593f19f5bd202a9f1a534913c9bd4ddf7b70b4bc907fb486'
         '46e0c0b326b580af6da240747f1e475cdd5838064452f641b2b0e1595cf3a8ddd7c06520c8ce9609fe18a59593f9981ff0b27b47401705a5f70d6c2496e613cb'
-        '335b337c7317974c871536476d21c9c157ec1dd6d6d6e1ad788cf3da384193d57c868347f1cadb57ad4e76035a8bae5311ac6adfa71f3d5634e37483b23fff89'
+        '8bd2bf05e74df54fcba3c355f442cddc01dae18c2e3fd278ad7504e6e842ae9e4840a1271325592bda1f854e6a7ea434ce9f9d74492f3b5cf45399bd496de704'
         'bf40d76a15dce5f4bc3c1d1d9e2aa8fc0fcd7308d89e1e2490f8049a98de150892172b29fea4f7667c0347259221ba4358eaa4fe0f6664832198afa1f111f7ab'
-        'f9975c36670c09511b96854ebf29cc5053dc7e4d07d0782205b99cf653c49f4a62f88a5f6e61e538d5a0d474b19a02a62afc4dc060c8fc10ec92555ab3fa40e0'
+        '85061bb961ce15909d0ea8aaabd75fee305b0eea4913a2efbb1def5a5728f83edfbfa7024357dd86e20d74a675357eaa0a3e7207a9273e8ae5aef47d38c31e75'
         'f65dacee60028c2944f014db082a308b7b833e3b3a2beb66823ba71a6b22117377aee31c8e77496b341f2008928c318781e0f65ec156998782571c51a0b05580'
         'SKIP'
         '4bca23e34cd74d956e1a15232096d02c4ae384053adab39f6d33fd3c1e1ff3b158e3be242722528e224a08d938d587293e6abd8384ee5f23fb90f72c63ff98b1'
