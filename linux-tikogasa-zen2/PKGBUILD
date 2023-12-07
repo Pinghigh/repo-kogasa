@@ -1,7 +1,7 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
-_major=6.5
-_minor=6
+_major=6.6
+_minor=4
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
@@ -20,7 +20,7 @@ options=('!strip')
 makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod git llvm llvm-libs clang lld polly make patch python kmod)
 BUILD_FLAGS=" LLVM=1 LLVM_IAS=1 "
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
-_ck_patchsource="https://raw.githubusercontent.com/graysky2/linux-patches/master/linux-${_major}.y/ck-hrtimer"
+_ck_patchsource="https://raw.githubusercontent.com/graysky2/linux-patches/master/linux-6.6.3%2B/ck-hrtimer"
 source=(
         #"clang"
         #"ld.lld"
@@ -30,8 +30,7 @@ source=(
         "0001-opt-add-some-compilation-flags.patch"
         "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
-        "${_patchsource}/sched/0001-EEVDF-cachy.patch"
-        "${_patchsource}/sched/0001-bore-eevdf.patch"
+        "${_patchsource}/sched/0001-bore-cachy.patch"
         "${_patchsource}/misc/0001-lrng.patch"
         "git+https://github.com/openzfs/zfs.git#branch=zfs-2.2-release"
 
@@ -350,8 +349,8 @@ _package() {
         make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
                 DEPMOD=/doesnt/exist modules_install # Suppress depmod
 
-        # remove build and source links
-        rm "$modulesdir"/{source,build}
+        # remove build links
+        rm "$modulesdir"/build
 }
 
 _package-headers() {
@@ -447,20 +446,19 @@ for _p in "${pkgname[@]}"; do
 }"
 done
 
-b2sums=('6fec33a0ee1700694c43c2271263d23408f3ad53f71200717ebd3843dd0aecb5235a058439e63e304da276978f1e4148ae1aac78a22166b2ca236b137a406c0f'
-        'd65a77cfabe415143e52e2f7a62869b9b7d693e86a1193a08b9fe3dc6e39f13c5377e5db8c158e8426d4d1e3a57a44e183386fb47163f3c518768ad1c9bd6b63'
+b2sums=('75f20de7474f45966a32f7a1e5f9beadb2b4e111fe9c0ab769ccaa203e798f1a1b0ee05c3cb14de6bb609e2e9df1e238deeadfc21dbf08c6b407c9530bac11ef'
+        '949cc401769097829c554fd9cd7eb241cc97e973308267bcdc8e692edb596b361391504a6d0fe064ad2c03b7db8d80e0537fc13420766243c0d2f35414476fb0'
         '58e1369fd712c2922d7764eb483bc2e8f9ab240ab4dd60c0ac50b3c53d42b3da209a74bd90fb2afe593f19f5bd202a9f1a534913c9bd4ddf7b70b4bc907fb486'
-        '46e0c0b326b580af6da240747f1e475cdd5838064452f641b2b0e1595cf3a8ddd7c06520c8ce9609fe18a59593f9981ff0b27b47401705a5f70d6c2496e613cb'
-        '8bd2bf05e74df54fcba3c355f442cddc01dae18c2e3fd278ad7504e6e842ae9e4840a1271325592bda1f854e6a7ea434ce9f9d74492f3b5cf45399bd496de704'
-        'bf40d76a15dce5f4bc3c1d1d9e2aa8fc0fcd7308d89e1e2490f8049a98de150892172b29fea4f7667c0347259221ba4358eaa4fe0f6664832198afa1f111f7ab'
-        '85061bb961ce15909d0ea8aaabd75fee305b0eea4913a2efbb1def5a5728f83edfbfa7024357dd86e20d74a675357eaa0a3e7207a9273e8ae5aef47d38c31e75'
-        'f65dacee60028c2944f014db082a308b7b833e3b3a2beb66823ba71a6b22117377aee31c8e77496b341f2008928c318781e0f65ec156998782571c51a0b05580'
+        'e3769b00511c088997ea12c9e86108db8357c2589df625ce03b439853e3ed2631151a2755858edf715e35928d7e95bf9ad4f9f717b01f14014358bc716fab541'
+        '0b81c9b2746171663a0570f240acbf40b9719f4f7b7bd4ea0e6a6da8901e24e2baba6e36f3422f319b199056184973bcf29321967c0b17745e65307f52a755e6'
+        'f2a1f07bc56f26ae3b361c401cbc41ca9927808e52228428d3ed5f909fa8c5231a8760223b3f1480fe9c6d6167825fd4825a66c2ae2411019b57f6aee2585417'
+        '1bd3b124dfc8244fed8031ae81713f80576c9aef3e3f32d92c5ef038dc2d5b8c8debf9ff2b37d378a14fd178449b2143049c1914de91263586461b00826a7412'
         'SKIP'
-        '4bca23e34cd74d956e1a15232096d02c4ae384053adab39f6d33fd3c1e1ff3b158e3be242722528e224a08d938d587293e6abd8384ee5f23fb90f72c63ff98b1'
-        '0475701c2175f174805cc35473b0bd6c24fd1144e589716ee4be1ad26d7980504555d375d228ffd2ed95c340aa87525a25521fa909c83acd1ba1d572ab4b8cfb'
-        'e8bc98241eb7fa60564a677b9cd736b85e1de610608757b4c4c97bd3cdb0bbe897c8e938a86a765976d587d97adc17e0863a8fa3248e1465d6dcb95371aeba13'
-        'e5a47fd2664a06a3a598c763018502165d840356ef8ba058e501a33cd05039369e9af6b1469ac195d9238c5da336288cc27fb4c762bcfd98158642ce1619a673'
-        '20ddc92f1800af48cc6c8d717120331be9d5046b3523075f19cadea2579919946a29a48a1927de7d906c2e0bb5f96499fecbb8cbf5beae8a980afc4d215aff8f'
-        'ab3109803b8efd522592e0ad51b56e2f7ddf15f42816b754cd4401d3583668a108d797d477b0bc8d35f2b665bf0333912bc799e21114e8b247ccaf0ba9ce4789'
-        '8d963273edf927d72aeec559252eac8fc848c643909fcf50a279803a091f16105bbf6b053cb49056485f8445353857dc34d076b98113cfd00142ccae640ba8fc'
-        '707ff9b04c2214bed43d0a720fef92cad8840666f6752edcc8aba2997d4375fe8d9f6e999660718eb5c3eacb31f601a5c62460da139842ec0921320dbec8a7c2')
+        'da6774b17cc34e2a9e6563bb8907d4e282d49c5551b854d367195b5e2c959afc544451c73678f2f3414d2ad1c32ef8780cd272ba74ffe62fbf006828609bdf6f'
+        '21e770328632ee6d966350df1e75d6fa22a23249f5f8991de76aacf695dfe1ad0bdd6c0914e95abaceba2217d7d412d20e184b16bbc3091d2016ddd2d893507e'
+        '6e31ca79f61cf06e0b533f583516eedc87d6b7c4fca256f25406e23fee90ae50ed1d2eecb24bff90ea27a7ea98994907b222d0dfaafdbce03c2ad7ca9115a661'
+        '7ba27ebcfd4d63abaee482372075699b0b125832a3daa91b5d6e76f5dab6ada9fbd207723f6c378cd88af389940caff551f19f325f17ae4d16993fb8a04943ac'
+        '0966872296958009ff2e287224343326bcda33647e0f33e524d0f0aaa823149bc9a7c416acb27beb13b844a7f2dbe3bd311573992eefda95499c0583a0139117'
+        'be08d1d43a51f64cec8b5c7d319f00101f032d1b8f9fe77f149bf401bafc12d5c203b4f0900117ef60c5ed785d9c7134c299b8b99cd638b0a639ead2454cef3b'
+        '47a77dd73ac57ee6bf792cdccc97aca11e69d8087b7efae8bd0061df26dd8f42e3f89a7c1b7982070c464f329a81c27e3464049db463f93bde9c7ccc5f0e090e'
+        'f93c418615d35bb55a18edf762490fc2c61fef8053ddcea2158ddc01d91f80a00582a3c8a8d8a7b05a74ee7f405d4ea9c4514646634d56850271df959a0de749')
