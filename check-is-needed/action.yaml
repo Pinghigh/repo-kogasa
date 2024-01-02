@@ -28,7 +28,7 @@ runs:
       shell: bash
       run: |
         mkdir pkgdb
-        curl --retry 3 --retry-delay 3 --url https://repo.tibrella.space/repo-kogasa.files.tar.gz -o repo-kogasa.files.tar.gz -L && tar -xzf repo-kogasa.files.tar.gz -C pkgdb || echo '仓库数据库不存在'
+        curl --retry 3 --retry-delay 3 --url https://onemanager-php-production.up.railway.app/repo-kogasa/repo-kogasa.files.tar.gz -o repo-kogasa.files.tar.gz -L && tar -xzf repo-kogasa.files.tar.gz -C pkgdb || echo '仓库数据库不存在'
 
     - name: 获取包名称
       shell: bash
