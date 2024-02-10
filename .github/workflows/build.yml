@@ -9,7 +9,7 @@ jobs:
   buildAUR:
     strategy:
       matrix:
-        pkgs: [jdk17-openj9-bin, linuxqq-nt-bwrap, otf-apple-fonts, ttf-harmonyos-sans, vscodium-insiders, git-credential-manager-core, capt-src]
+        pkgs: [linuxqq-nt-bwrap, otf-apple-fonts, ttf-harmonyos-sans, vscodium-insiders, git-credential-manager-core, capt-src, jdk21-graalvm-ee-bin, x-minecraft-launcher-bin]
 
       fail-fast: false
       
