@@ -314,7 +314,7 @@ prepare() {
 
 build() {
         cd ${srcdir}/${_srcname}
-        make ${BUILD_FLAGS[*]} all -j4
+        make ${BUILD_FLAGS[*]} all -j4 -d
 }
 
 _package() {
