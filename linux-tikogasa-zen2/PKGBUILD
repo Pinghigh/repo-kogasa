@@ -32,7 +32,7 @@ source=(
         "${_patchsource}/all/0001-cachyos-base-all.patch"
         "${_patchsource}/sched/0001-sched-ext.patch"
         # "${_patchsource}/misc/0001-lrng.patch"
-        "git+https://github.com/openzfs/zfs.git#commit=2d940c7c29a0ba5f84f50ea9773dea237e27bb08"
+        "git+https://github.com/cachyos/zfs.git#commit=2d940c7c29a0ba5f84f50ea9773dea237e27bb08"
 
         # -ck patches
         ${_ck_patchsource}/0001-hrtimer-Create-highres-timeout-variants-of-schedule_.patch
