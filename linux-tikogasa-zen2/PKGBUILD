@@ -24,8 +24,8 @@ _ck_patchsource="https://raw.githubusercontent.com/graysky2/linux-patches/master
 source=(
         #"clang"
         #"ld.lld"
-        #"https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
-         "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+        "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+        # "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
         "config"
         "0001-opt-add-some-compilation-flags.patch"
         "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
@@ -304,7 +304,7 @@ prepare() {
         make -s kernelrelease > version
         echo "Prepared $pkgbase version $(<version)"
 
-        make ${BUILD_FLAGS[*]} nconfig
+        # make ${BUILD_FLAGS[*]} nconfig
 
         ### Save configuration for later reuse
         echo "Save configuration for later reuse..."
