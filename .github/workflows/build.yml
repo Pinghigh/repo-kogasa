@@ -50,7 +50,7 @@ jobs:
   buildNonAUR:
     strategy:
       matrix:
-        pkgs: [linux-tikogasa-zen2]
+        pkgs: [] #[linux-tikogasa-zen2]
 
       fail-fast: false
       
