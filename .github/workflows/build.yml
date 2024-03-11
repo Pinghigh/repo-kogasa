@@ -47,38 +47,38 @@ jobs:
     #     artifacts: "./*/*.zst"
     #     token: ${{ secrets.GITHUB_TOKEN }}
 
-  buildNonAUR:
-    strategy:
-      matrix:
-        pkgs: [] #[linux-tikogasa-zen2]
+  # buildNonAUR:
+  #   strategy:
+  #     matrix:
+  #       pkgs: [] #[linux-tikogasa-zen2]
 
-      fail-fast: false
+  #     fail-fast: false
       
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v3
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: 检查包是否需要更新
-        id: is-needed
-        uses: ./check-is-needed
-        with:
-          package-name: ${{ matrix.pkgs }}
+  #     - name: 检查包是否需要更新
+  #       id: is-needed
+  #       uses: ./check-is-needed
+  #       with:
+  #         package-name: ${{ matrix.pkgs }}
 
-      - name: Build Non-AUR packages
-        id: makepkg
-        if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
-        uses: Pinghigh/pkgbuild-action@v5.2.rc.2
-        with:
-          pkgdir: ${{ matrix.pkgs }}
-          makepkgProfilePath: ../makepkg-no-fuse-ld.conf
-          makepkgArgs: --skipchecksums
+  #     - name: Build Non-AUR packages
+  #       id: makepkg
+  #       if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
+  #       uses: Pinghigh/pkgbuild-action@v5.2.rc.2
+  #       with:
+  #         pkgdir: ${{ matrix.pkgs }}
+  #         makepkgProfilePath: ../makepkg-no-fuse-ld.conf
+  #         makepkgArgs: --skipchecksums
 
-      - uses: actions/upload-artifact@v3
-        if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
-        with:
-          path: ./*/*.pkg.tar.zst
-          if-no-files-found: error
+  #     - uses: actions/upload-artifact@v3
+  #       if: ${{ steps.is-needed.outputs.is-needed == 'true' }}
+  #       with:
+  #         path: ./*/*.pkg.tar.zst
+  #         if-no-files-found: error
       
       # - uses: ncipollo/release-action@v1
       #   with:
@@ -92,7 +92,7 @@ jobs:
   uploadToOneDrive:      
     runs-on: ubuntu-latest
     if: always()
-    needs: [buildAUR, buildNonAUR]
+    needs: [buildAUR] # , buildNonAUR]
 
     steps:
       - uses: actions/checkout@v3
