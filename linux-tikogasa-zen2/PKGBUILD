@@ -305,7 +305,7 @@ prepare() {
         make -s kernelrelease > version
         echo "Prepared $pkgbase version $(<version)"
 
-        make ${BUILD_FLAGS[*]} nconfig
+        # make ${BUILD_FLAGS[*]} nconfig
 
         ### Save configuration for later reuse
         echo "Save configuration for later reuse..."
