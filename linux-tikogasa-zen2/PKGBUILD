@@ -315,7 +315,7 @@ prepare() {
 
 build() {
         cd ${srcdir}/${_srcname}
-        make ${BUILD_FLAGS[*]} all -j4 -d
+        make ${BUILD_FLAGS[*]} all -j4
         make -C tools/bpf/bpftool vmlinux.h feature-clang-bpf-co-re=1 -j4
 }
 
