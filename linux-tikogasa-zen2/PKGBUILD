@@ -1,38 +1,44 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
-_major=6.7
-_minor=6
+_major=6.10
+_minor=0
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
-_stable=${_major}.${_minor}
-#_stable=${_major}
+# _stable=${_major}.${_minor}
+_stable=${_major}
 #_stablerc=${_major}-${_rcver}
 _srcname=linux-${_stable}
 #_srcname=linux-${_major}
 pkgdesc='Linux EEVDF-BORE + Cachy Sauce scheduler Kernel with compile-improvements and patches from some disrobutions for amd zen2 cpu'
 pkgrel=1
 _kernver=$pkgver-$pkgrel
+_kernuname="${pkgver}-${pkgsuffix}"
 arch=('x86_64')
 url="https://github.com/CachyOS/linux-cachyos"
-license=('GPL2')
-options=('!strip')
+license=('custom')
+options=('!strip' '!debug' '!lto')
 makedepends=(bc libelf pahole cpio perl libc++ openmp tar zstd xz gcc initramfs kmod git llvm llvm-libs clang lld polly make patch python kmod)
 BUILD_FLAGS=" LLVM=1 LLVM_IAS=1 "
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
-_ck_patchsource="https://raw.githubusercontent.com/graysky2/linux-patches/master/linux-6.6.3%2B/ck-hrtimer"
+_ck_patchsource="https://raw.githubusercontent.com/graysky2/linux-patches/master/linux-6.8.y/ck-hrtimer"
 source=(
         #"clang"
         #"ld.lld"
-        "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
-        # "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+        # "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+        "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
         "config"
         "0001-opt-add-some-compilation-flags.patch"
-        "https://raw.githubusercontent.com/zhmars/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
+        # "https://raw.githubusercontent.com/bigshans/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
+        "https://raw.githubusercontent.com/bigshans/cjktty-patches/master/v6.x/cjktty-6.9.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
-        "${_patchsource}/sched/0001-bore-cachy.patch" 
-        "${_patchsource}/misc/0001-lrng.patch"
-        "git+https://github.com/openzfs/zfs.git#branch=zfs-2.2-release"
+
+        "${_patchsource}/sched/0001-sched-ext.patch"
+        "${_patchsource}/sched/0001-bore-cachy-ext.patch"
+        
+        # "${_patchsource}/misc/0001-lrng.patch"
+        # "git+https://github.com/openzfs/zfs.git#branch=zfs-2.2-release"
+        "git+https://github.com/cachyos/zfs.git#commit=55a3483f28e69bf0514abb8c0a8e3812da282e73"
 
         # -ck patches
         ${_ck_patchsource}/0001-hrtimer-Create-highres-timeout-variants-of-schedule_.patch
@@ -94,14 +100,14 @@ prepare() {
                 -e HAVE_GCC_PLUGINS
 
         ### Select tick rate
-        echo "Setting tick rate to 2k Hz..."
+        echo "Setting tick rate to 1k Hz..."
         scripts/config -d HZ_300 \
                 -e HZ_1000 \
                 --set-val HZ 1000
 
-        ### Enable BORE scheduler
-        echo "Selecting BORE CPU scheduler..."
-        scripts/config -e SCHED_BORE
+        ### Enable EXT+BORE scheduler
+        echo "Selecting EXT+BORE CPU scheduler..."
+        scripts/config -e SCHED_CLASS_EXT -e SCHED_BORE --set-val MIN_BASE_SLICE_NS 1000000
 
         ### Setting NR_CPUS
         echo "Setting NR_CPUS 16..."
@@ -142,87 +148,82 @@ prepare() {
             -e DEFAULT_BBR \
             --set-str DEFAULT_TCP_CONG bbr
 
-        ### Select LRU config
-        echo "Enabling multigenerational LRU..."
-        scripts/config -e LRU_GEN \
-                -e LRU_GEN_ENABLED \
-                -d LRU_GEN_STATS
-
+        
         echo "Enable THP always..."
         scripts/config -d TRANSPARENT_HUGEPAGE_MADVISE \
                 -e TRANSPARENT_HUGEPAGE_ALWAYS
 
         ### Enable LRNG
-        echo "Enabling Linux Random Number Generator ..."
-        scripts/config -d RANDOM_DEFAULT_IMPL \
-                -e LRNG \
-                -e LRNG_SHA256 \
-                -e LRNG_COMMON_DEV_IF \
-                -e LRNG_DRNG_ATOMIC \
-                -e LRNG_SYSCTL \
-                -e LRNG_RANDOM_IF \
-                -e LRNG_AIS2031_NTG1_SEEDING_STRATEGY \
-                -m LRNG_KCAPI_IF \
-                -m LRNG_HWRAND_IF \
-                -e LRNG_DEV_IF \
-                -e LRNG_RUNTIME_ES_CONFIG \
-                -e LRNG_IRQ_DFLT_TIMER_ES \
-                -d LRNG_SCHED_DFLT_TIMER_ES \
-                -e LRNG_TIMER_COMMON \
-                -d LRNG_COLLECTION_SIZE_256 \
-                -d LRNG_COLLECTION_SIZE_512 \
-                -e LRNG_COLLECTION_SIZE_1024 \
-                -d LRNG_COLLECTION_SIZE_2048 \
-                -d LRNG_COLLECTION_SIZE_4096 \
-                -d LRNG_COLLECTION_SIZE_8192 \
-                --set-val LRNG_COLLECTION_SIZE 1024 \
-                -e LRNG_HEALTH_TESTS \
-                --set-val LRNG_RCT_CUTOFF 31 \
-                --set-val LRNG_APT_CUTOFF 325 \
-                -e LRNG_IRQ \
-                -e LRNG_CONTINUOUS_COMPRESSION_ENABLED \
-                -d LRNG_CONTINUOUS_COMPRESSION_DISABLED \
-                -e LRNG_ENABLE_CONTINUOUS_COMPRESSION \
-                -e LRNG_SWITCHABLE_CONTINUOUS_COMPRESSION \
-                --set-val LRNG_IRQ_ENTROPY_RATE 256 \
-                -e LRNG_JENT \
-                --set-val LRNG_JENT_ENTROPY_RATE 16 \
-                -e LRNG_CPU \
-                --set-val LRNG_CPU_FULL_ENT_MULTIPLIER 1 \
-                --set-val LRNG_CPU_ENTROPY_RATE 8 \
-                -e LRNG_SCHED \
-                --set-val LRNG_SCHED_ENTROPY_RATE 4294967295 \
-                -e LRNG_DRNG_CHACHA20 \
-                -m LRNG_DRBG \
-                -m LRNG_DRNG_KCAPI \
-                -e LRNG_SWITCH \
-                -e LRNG_SWITCH_HASH \
-                -m LRNG_HASH_KCAPI \
-                -e LRNG_SWITCH_DRNG \
-                -m LRNG_SWITCH_DRBG \
-                -m LRNG_SWITCH_DRNG_KCAPI \
-                -e LRNG_DFLT_DRNG_CHACHA20 \
-                -d LRNG_DFLT_DRNG_DRBG \
-                -d LRNG_DFLT_DRNG_KCAPI \
-                -e LRNG_TESTING_MENU \
-                -d LRNG_RAW_HIRES_ENTROPY \
-                -d LRNG_RAW_JIFFIES_ENTROPY \
-                -d LRNG_RAW_IRQ_ENTROPY \
-                -d LRNG_RAW_RETIP_ENTROPY \
-                -d LRNG_RAW_REGS_ENTROPY \
-                -d LRNG_RAW_ARRAY \
-                -d LRNG_IRQ_PERF \
-                -d LRNG_RAW_SCHED_HIRES_ENTROPY \
-                -d LRNG_RAW_SCHED_PID_ENTROPY \
-                -d LRNG_RAW_SCHED_START_TIME_ENTROPY \
-                -d LRNG_RAW_SCHED_NVCSW_ENTROPY \
-                -d LRNG_SCHED_PERF \
-                -d LRNG_ACVT_HASH \
-                -d LRNG_RUNTIME_MAX_WO_RESEED_CONFIG \
-                -d LRNG_TEST_CPU_ES_COMPRESSION \
-                -e LRNG_SELFTEST \
-                -d LRNG_SELFTEST_PANIC \
-                -d LRNG_RUNTIME_FORCE_SEEDING_DISABLE
+        # echo "Enabling Linux Random Number Generator ..."
+        # scripts/config -d RANDOM_DEFAULT_IMPL \
+        #         -e LRNG \
+        #         -e LRNG_SHA256 \
+        #         -e LRNG_COMMON_DEV_IF \
+        #         -e LRNG_DRNG_ATOMIC \
+        #         -e LRNG_SYSCTL \
+        #         -e LRNG_RANDOM_IF \
+        #         -e LRNG_AIS2031_NTG1_SEEDING_STRATEGY \
+        #         -m LRNG_KCAPI_IF \
+        #         -m LRNG_HWRAND_IF \
+        #         -e LRNG_DEV_IF \
+        #         -e LRNG_RUNTIME_ES_CONFIG \
+        #         -e LRNG_IRQ_DFLT_TIMER_ES \
+        #         -d LRNG_SCHED_DFLT_TIMER_ES \
+        #         -e LRNG_TIMER_COMMON \
+        #         -d LRNG_COLLECTION_SIZE_256 \
+        #         -d LRNG_COLLECTION_SIZE_512 \
+        #         -e LRNG_COLLECTION_SIZE_1024 \
+        #         -d LRNG_COLLECTION_SIZE_2048 \
+        #         -d LRNG_COLLECTION_SIZE_4096 \
+        #         -d LRNG_COLLECTION_SIZE_8192 \
+        #         --set-val LRNG_COLLECTION_SIZE 1024 \
+        #         -e LRNG_HEALTH_TESTS \
+        #         --set-val LRNG_RCT_CUTOFF 31 \
+        #         --set-val LRNG_APT_CUTOFF 325 \
+        #         -e LRNG_IRQ \
+        #         -e LRNG_CONTINUOUS_COMPRESSION_ENABLED \
+        #         -d LRNG_CONTINUOUS_COMPRESSION_DISABLED \
+        #         -e LRNG_ENABLE_CONTINUOUS_COMPRESSION \
+        #         -e LRNG_SWITCHABLE_CONTINUOUS_COMPRESSION \
+        #         --set-val LRNG_IRQ_ENTROPY_RATE 256 \
+        #         -e LRNG_JENT \
+        #         --set-val LRNG_JENT_ENTROPY_RATE 16 \
+        #         -e LRNG_CPU \
+        #         --set-val LRNG_CPU_FULL_ENT_MULTIPLIER 1 \
+        #         --set-val LRNG_CPU_ENTROPY_RATE 8 \
+        #         -e LRNG_SCHED \
+        #         --set-val LRNG_SCHED_ENTROPY_RATE 4294967295 \
+        #         -e LRNG_DRNG_CHACHA20 \
+        #         -m LRNG_DRBG \
+        #         -m LRNG_DRNG_KCAPI \
+        #         -e LRNG_SWITCH \
+        #         -e LRNG_SWITCH_HASH \
+        #         -m LRNG_HASH_KCAPI \
+        #         -e LRNG_SWITCH_DRNG \
+        #         -m LRNG_SWITCH_DRBG \
+        #         -m LRNG_SWITCH_DRNG_KCAPI \
+        #         -e LRNG_DFLT_DRNG_CHACHA20 \
+        #         -d LRNG_DFLT_DRNG_DRBG \
+        #         -d LRNG_DFLT_DRNG_KCAPI \
+        #         -e LRNG_TESTING_MENU \
+        #         -d LRNG_RAW_HIRES_ENTROPY \
+        #         -d LRNG_RAW_JIFFIES_ENTROPY \
+        #         -d LRNG_RAW_IRQ_ENTROPY \
+        #         -d LRNG_RAW_RETIP_ENTROPY \
+        #         -d LRNG_RAW_REGS_ENTROPY \
+        #         -d LRNG_RAW_ARRAY \
+        #         -d LRNG_IRQ_PERF \
+        #         -d LRNG_RAW_SCHED_HIRES_ENTROPY \
+        #         -d LRNG_RAW_SCHED_PID_ENTROPY \
+        #         -d LRNG_RAW_SCHED_START_TIME_ENTROPY \
+        #         -d LRNG_RAW_SCHED_NVCSW_ENTROPY \
+        #         -d LRNG_SCHED_PERF \
+        #         -d LRNG_ACVT_HASH \
+        #         -d LRNG_RUNTIME_MAX_WO_RESEED_CONFIG \
+        #         -d LRNG_TEST_CPU_ES_COMPRESSION \
+        #         -e LRNG_SELFTEST \
+        #         -d LRNG_SELFTEST_PANIC \
+        #         -d LRNG_RUNTIME_FORCE_SEEDING_DISABLE
 
         ### Enable zram/zswap ZSTD compression
         echo "Enabling zram/swap ZSTD compression..."
@@ -286,7 +287,7 @@ prepare() {
 
         cd ${srcdir}/"zfs"
         ./autogen.sh
-        sed -i "s|\$(uname -r)|${pkgver}-${pkgsuffix}|g" configure
+        sed -i "s|\$(uname -r)|${_kernuname}|g" configure
         ./configure KERNEL_LLVM=1 CFLAGS="-O3 -march=znver2 -mtune=znver2 -Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-parallel -mllvm -polly-position=early -fopenmp -mllvm -polly-tiling=true -mllvm -polly-prevect-width=256 -mllvm -polly-vectorizer=stripmine -mllvm -polly-omp-backend=LLVM -mllvm -polly-scheduling=dynamic -mllvm -polly-ast-use-context -mllvm -polly-invariant-load-hoisting -mllvm -polly-loopfusion-greedy -mllvm -polly-run-inliner -mllvm -polly-run-dce -mllvm -polly-enable-delicm=true -mllvm -extra-vectorizer-passes -mllvm -enable-cond-stores-vec -mllvm -slp-vectorize-hor-store -mllvm -enable-loopinterchange -mllvm -enable-loop-distribute -mllvm -enable-unroll-and-jam -mllvm -enable-loop-flatten -mllvm -interleave-small-loop-scalar-reduction -mllvm -unroll-runtime-multi-exit -mllvm -aggressive-ext-opt -fno-math-errno -fno-trapping-math -falign-functions=32 -fno-semantic-interposition -mharden-sls=none -fomit-frame-pointer -mprefer-vector-width=256 -std=gnu18" CC=clang LD=ld.lld --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
                 --datadir=/usr/share --includedir=/usr/include --with-udevdir=/lib/udev \
                 --libexecdir=/usr/lib/zfs --with-config=kernel \
@@ -304,7 +305,7 @@ prepare() {
         make -s kernelrelease > version
         echo "Prepared $pkgbase version $(<version)"
 
-        # make ${BUILD_FLAGS[*]} nconfig
+        make ${BUILD_FLAGS[*]} nconfig
 
         ### Save configuration for later reuse
         echo "Save configuration for later reuse..."
@@ -348,7 +349,7 @@ _package() {
 }
 
 _package-headers() {
-        pkgdesc="Headers and scripts for building modules for the $pkgdesc kernel"
+        pkgdesc="Headers and scripts for building modules for the $pkgbase kernel"
         depends=('pahole' $pkgbase=$_kernver)
 
         cd ${srcdir}/${_srcname}
@@ -440,19 +441,19 @@ for _p in "${pkgname[@]}"; do
 }"
 done
 
-b2sums=('51d6e2304e7a9188a0fec5714276589cb46948157c76a2f4ed3f5e0bf634d94a89ea75251229a86e018767a3367328c16b610d631c78d82663dcd1d904b73385'
-        'ed91e5462705beed574b698f7e704c40a638301043fa1ffd28146af2348687e07b3d2d9b1c46dd08b154b468a98afd11bd5d5323d7042696a67ba7170aed2916'
+b2sums=('bb243ea7493b9d63aa2df2050a3f1ae2b89ee84a20015239cf157e3f4f51c7ac5efedc8a51132b2d7482f9276ac418de6624831c8a3b806130d9c2d2124c539b'
+        '6c771fb20626d15a87606ab927c3c061b0138dc8dd8d78a922351f06285c138448426420e8977be014f46493e49cdd83d1448700ea650b682484f14c7bc72285'
         '58e1369fd712c2922d7764eb483bc2e8f9ab240ab4dd60c0ac50b3c53d42b3da209a74bd90fb2afe593f19f5bd202a9f1a534913c9bd4ddf7b70b4bc907fb486'
-        '9a04dd9d63207f2233423434eac319dec9ee7141909b5a094ffea83729237b7042684689c302d1efc762f822e9d2d68995193554c419bbfa2bb98bd52fb9a6e6'
-        '92dc15e75ad82bb75a338651b52c5d9693d6e577140f9a6184f0593e09dd306991ab17b5515ef90cfa343121eeb56f6d989f9247d889b9c016e840c2784cc460'
-        '6c2400c0f49d413599c359860cc51b5a1fe61be52ae309f11cc7a7de229b46195229a70f87a01381e93b8421675c09a0268714f1cabf5ef16900af7102f637ab'
-        'd7d5f3cd0f639374a90fb0205c643803bcb0aa04f69acc087fc79893e9ff5ed3930e028b636c1c8d7e6b66eca5baa6805ea52649b34b78d762e1ce5095f292b1'
-        'SKIP'
-        'da6774b17cc34e2a9e6563bb8907d4e282d49c5551b854d367195b5e2c959afc544451c73678f2f3414d2ad1c32ef8780cd272ba74ffe62fbf006828609bdf6f'
-        '21e770328632ee6d966350df1e75d6fa22a23249f5f8991de76aacf695dfe1ad0bdd6c0914e95abaceba2217d7d412d20e184b16bbc3091d2016ddd2d893507e'
-        '6e31ca79f61cf06e0b533f583516eedc87d6b7c4fca256f25406e23fee90ae50ed1d2eecb24bff90ea27a7ea98994907b222d0dfaafdbce03c2ad7ca9115a661'
-        '7ba27ebcfd4d63abaee482372075699b0b125832a3daa91b5d6e76f5dab6ada9fbd207723f6c378cd88af389940caff551f19f325f17ae4d16993fb8a04943ac'
-        '0966872296958009ff2e287224343326bcda33647e0f33e524d0f0aaa823149bc9a7c416acb27beb13b844a7f2dbe3bd311573992eefda95499c0583a0139117'
-        'be08d1d43a51f64cec8b5c7d319f00101f032d1b8f9fe77f149bf401bafc12d5c203b4f0900117ef60c5ed785d9c7134c299b8b99cd638b0a639ead2454cef3b'
-        '47a77dd73ac57ee6bf792cdccc97aca11e69d8087b7efae8bd0061df26dd8f42e3f89a7c1b7982070c464f329a81c27e3464049db463f93bde9c7ccc5f0e090e'
-        'f93c418615d35bb55a18edf762490fc2c61fef8053ddcea2158ddc01d91f80a00582a3c8a8d8a7b05a74ee7f405d4ea9c4514646634d56850271df959a0de749')
+        '8e08152d7413fbd00f71e5f09c680ad7b6b4f8bdfbd56b07659ea7ce54a7d738b73c0fa240f3c90133d4cb2e566be94ffaad5ba1ffddbd4dff99ea6587c44b42'
+        'ef61a114293e1153f425eb35642175acef864ec548cf76f10e44d203763949d61180ba1b848a24a538840792ce431387e014ca50a27f2cb90d693aa706bad08c'
+        '402c8bb5ac3f3a50563bdebbbc004435a9d6413519e53409a7eea11bd47a5e907ec7e6fcd7a81059f446b1d7988cd2c94f0da7fa73adb645d6849f10f1c945a9'
+        '85d34a21cf3cc07e96f00855e3f9708c35ebcf587da0f3579336d6dfa9add13c1888f922d405b29f28b47ca008e217bd2a6af88852c544de92dd2945e518d58b'
+        '84acaced62964ab0df89a29c50e3bfb94c9abc33be12de2907708c60c27b57d9317fc88d31ed076d6aadaac791e5844bdd8fcd621497d86ddb791198f992ee2b'
+        'dd6c37f534e700279e86d6eb6ec9e0de20c91686c50856a5545f6e973983633888f4501731c0032dc918dfd32359205b19dc9180c079336a6797d5bced14caea'
+        'cd86d57253e8d6b3268a58dc72e5d702bf0281823d4b1bd49ab63532c8688a253c54d4a6eb10fb25818722d0f448a328b10ffd837c217bf5a4ad7f24bea97088'
+        '602e3e8a87b4793931d6db6876e2a39853bdd341abc8c8d19f250c8a1ff92d4e405b23e5c222a0d556c3a0dabba58ea20038aa1c916f62db9c5a7c7814c40ab8'
+        '756d558d31182e7b9901b5a595ce087a3a656d35f0ac62c577fd9c0444480f93d72ef7ba66f239467a87cc534881b8d071ec0de0dd37f6439e3d5a0eec7d10af'
+        'd04c0d29632abd975e602dfb7efbf68da2ff96f4e9fab77970b2e6d5762e9ec215f632d9413b43541e83e7a74cae142f26446b54391433ac30df1076315d3e0e'
+        '76fd2bc9ba4472ed8c2d338425ebd5ee2a2bf58ee570591dc6232cae0bd1b8a4833ab5725893a08726c8660345fc6c3a431e8e0172690031d95bb508f229bb1e'
+        'a3ec765a97de5962d173f529698d1d7c146bdcd589559f62c29cf1ce5bbbb178eb983ce03af7bd9d1b99cf88ed617cf32d0c87f541ce05dda6dc87a45a2f5e7a'
+        'f4e838fa36ee5b7a9130d8c768d9543887898ed9be7b4a443b45d98f3eba368bdfb1a0bcd3ab95eed4e93a41a9c3f1417a2160ea75e8df668185a3b6332c3fb5')
