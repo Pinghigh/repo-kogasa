@@ -25,8 +25,8 @@ _ck_patchsource="https://raw.githubusercontent.com/graysky2/linux-patches/master
 source=(
         #"clang"
         #"ld.lld"
-        # "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
-        "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+        "https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+#         "https://mirrors.bfsu.edu.cn/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
         "config"
         "0001-opt-add-some-compilation-flags.patch"
         # "https://raw.githubusercontent.com/bigshans/cjktty-patches/master/v6.x/cjktty-${_major}.patch"
@@ -38,7 +38,7 @@ source=(
         
         # "${_patchsource}/misc/0001-lrng.patch"
         # "git+https://github.com/openzfs/zfs.git#branch=zfs-2.2-release"
-        "git+https://github.com/cachyos/zfs.git#commit=55a3483f28e69bf0514abb8c0a8e3812da282e73"
+        "git+https://github.com/openzfs/zfs.git#commit=a1be921673415c4ff0f6719f40479b2633bf47a3"
 
         # -ck patches
         ${_ck_patchsource}/0001-hrtimer-Create-highres-timeout-variants-of-schedule_.patch
@@ -317,8 +317,8 @@ prepare() {
 
 build() {
         cd ${srcdir}/${_srcname}
-        make ${BUILD_FLAGS[*]} all -j4
-        make -C tools/bpf/bpftool vmlinux.h feature-clang-bpf-co-re=1 -j4
+        make ${BUILD_FLAGS[*]} all -j3
+        make -C tools/bpf/bpftool vmlinux.h feature-clang-bpf-co-re=1 -j3
 }
 
 _package() {
