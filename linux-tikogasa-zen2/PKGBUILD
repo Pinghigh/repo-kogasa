@@ -1,12 +1,12 @@
 pkgsuffix=tikogasa-zen2
 pkgbase=linux-$pkgsuffix
 _major=6.10
-_minor=0
+_minor=1
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
-# _stable=${_major}.${_minor}
-_stable=${_major}
+_stable=${_major}.${_minor}
+# _stable=${_major}
 #_stablerc=${_major}-${_rcver}
 _srcname=linux-${_stable}
 #_srcname=linux-${_major}
@@ -33,13 +33,11 @@ source=(
         "https://raw.githubusercontent.com/bigshans/cjktty-patches/master/v6.x/cjktty-6.9.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
 
-        "${_patchsource}/sched/0001-sched-ext.patch"
-        "${_patchsource}/sched/0001-bore-cachy-ext.patch"
-        
+	"${_patchsource}/sched/0001-bore-cachy.patch"
+
         # "${_patchsource}/misc/0001-lrng.patch"
         # "git+https://github.com/openzfs/zfs.git#branch=zfs-2.2-release"
-        "git+https://github.com/openzfs/zfs.git#commit=a1be921673415c4ff0f6719f40479b2633bf47a3"
-
+	"git+https://github.com/cachyos/zfs.git#commit=55a3483f28e69bf0514abb8c0a8e3812da282e73"
         # -ck patches
         ${_ck_patchsource}/0001-hrtimer-Create-highres-timeout-variants-of-schedule_.patch
         ${_ck_patchsource}/0002-time-Special-case-calls-of-schedule_timeout-1-to-use.patch
@@ -105,9 +103,9 @@ prepare() {
                 -e HZ_1000 \
                 --set-val HZ 1000
 
-        ### Enable EXT+BORE scheduler
-        echo "Selecting EXT+BORE CPU scheduler..."
-        scripts/config -e SCHED_CLASS_EXT -e SCHED_BORE --set-val MIN_BASE_SLICE_NS 1000000
+        ### Enable BORE scheduler
+        echo "Selecting BORE CPU scheduler..."
+        scripts/config -e SCHED_BORE --set-val MIN_BASE_SLICE_NS 1000000
 
         ### Setting NR_CPUS
         echo "Setting NR_CPUS 16..."
