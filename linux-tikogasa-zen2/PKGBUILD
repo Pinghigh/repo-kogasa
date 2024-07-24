@@ -301,11 +301,13 @@ prepare() {
         yes "" | make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" config >/dev/null
         diff -u ../config .config || :
 
+	#make ${BUILD_FLAGS[*]} LSMOD="$HOME/.config/modprobed.db" localmodconfig
+
         ### Prepared version
         make -s kernelrelease > version
         echo "Prepared $pkgbase version $(<version)"
 
-        # make ${BUILD_FLAGS[*]} nconfig
+        #make ${BUILD_FLAGS[*]} nconfig
 
         ### Save configuration for later reuse
         echo "Save configuration for later reuse..."
