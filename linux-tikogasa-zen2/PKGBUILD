@@ -37,7 +37,7 @@ source=(
 
         # "${_patchsource}/misc/0001-lrng.patch"
         # "git+https://github.com/openzfs/zfs.git#branch=zfs-2.2-release"
-	"git+https://github.com/cachyos/zfs.git#commit=55a3483f28e69bf0514abb8c0a8e3812da282e73"
+	"git+https://github.com/pinghigh/zfs.git#commit=dff14af85e0140796b45b8d678882376f9bfb57f"
         # -ck patches
         ${_ck_patchsource}/0001-hrtimer-Create-highres-timeout-variants-of-schedule_.patch
         ${_ck_patchsource}/0002-time-Special-case-calls-of-schedule_timeout-1-to-use.patch
