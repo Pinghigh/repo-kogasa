@@ -33,7 +33,8 @@ source=(
         "https://raw.githubusercontent.com/bigshans/cjktty-patches/master/v6.x/cjktty-6.9.patch"
         "${_patchsource}/all/0001-cachyos-base-all.patch"
 
-	"${_patchsource}/sched/0001-bore-cachy.patch"
+	"${_patchsource}/sched/0001-sched-ext.patch"
+	"${_patchsource}/sched/0001-bore-cachy-ext.patch"
 
         # "${_patchsource}/misc/0001-lrng.patch"
         # "git+https://github.com/openzfs/zfs.git#branch=zfs-2.2-release"
@@ -103,9 +104,9 @@ prepare() {
                 -e HZ_1000 \
                 --set-val HZ 1000
 
-        ### Enable BORE scheduler
-        echo "Selecting BORE CPU scheduler..."
-        scripts/config -e SCHED_BORE --set-val MIN_BASE_SLICE_NS 1000000
+        ### Enable BORE + EXT scheduler
+        echo "Selecting EXT + BORE CPU scheduler..."
+        scripts/config -e SCHED_CLASS_EXT -e SCHED_BORE --set-val MIN_BASE_SLICE_NS 1000000
 
         ### Setting NR_CPUS
         echo "Setting NR_CPUS 16..."
@@ -234,30 +235,31 @@ prepare() {
 
         ### Disable DEBUG
         ## Do not work with sched-ext
-        scripts/config -d DEBUG_INFO \
-                -d DEBUG_INFO_BTF \
-                -d DEBUG_INFO_DWARF4 \
-                -d DEBUG_INFO_DWARF5 \
-                -d PAHOLE_HAS_SPLIT_BTF \
-                -d DEBUG_INFO_BTF_MODULES \
-                -d SLUB_DEBUG \
-                -d PM_DEBUG \
-                -d PM_ADVANCED_DEBUG \
-                -d PM_SLEEP_DEBUG \
-                -d ACPI_DEBUG \
-                -d SCHED_DEBUG \
-                -d LATENCYTOP \
-                -d DEBUG_PREEMPT
+        # scripts/config -d DEBUG_INFO \
+        #         -d DEBUG_INFO_BTF \
+        #         -d DEBUG_INFO_DWARF4 \
+        #         -d DEBUG_INFO_DWARF5 \
+        #         -d PAHOLE_HAS_SPLIT_BTF \
+        #         -d DEBUG_INFO_BTF_MODULES \
+        #         -d SLUB_DEBUG \
+        #         -d PM_DEBUG \
+        #         -d PM_ADVANCED_DEBUG \
+        #         -d PM_SLEEP_DEBUG \
+        #         -d ACPI_DEBUG \
+        #         -d SCHED_DEBUG \
+        #         -d LATENCYTOP \
+        #         -d DEBUG_PREEMPT
 
         # disable CONFIG_DEBUG_INFO=y at build time otherwise memory usage blows up
         # and can easily overwhelm a system with 32 GB of memory using a tmpfs build
         # partition ... this was introduced by FS#66260, see:
         # https://git.archlinux.org/svntogit/packages.git/commit/trunk?h=packages/linux&id=663b08666b269eeeeaafbafaee07fd03389ac8d7
-        scripts/config -d CONFIG_CGROUP_BPF
-        scripts/config -d CONFIG_BPF_LSM
-        scripts/config -d CONFIG_BPF_PRELOAD
-        scripts/config -d CONFIG_BPF_LIRC_MODE2
-        scripts/config -d CONFIG_BPF_KPROBE_OVERRIDE
+	
+        # scripts/config -d CONFIG_CGROUP_BPF
+        # scripts/config -d CONFIG_BPF_LSM
+        # scripts/config -d CONFIG_BPF_PRELOAD
+        # scripts/config -d CONFIG_BPF_LIRC_MODE2
+        # scripts/config -d CONFIG_BPF_KPROBE_OVERRIDE
 
         # https://bbs.archlinux.org/viewtopic.php?pid=1824594#p1824594
         scripts/config -e CONFIG_PSI_DEFAULT_DISABLED
