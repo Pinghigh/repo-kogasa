@@ -255,11 +255,11 @@ prepare() {
         # partition ... this was introduced by FS#66260, see:
         # https://git.archlinux.org/svntogit/packages.git/commit/trunk?h=packages/linux&id=663b08666b269eeeeaafbafaee07fd03389ac8d7
 	
-        # scripts/config -d CONFIG_CGROUP_BPF
-        # scripts/config -d CONFIG_BPF_LSM
-        # scripts/config -d CONFIG_BPF_PRELOAD
-        # scripts/config -d CONFIG_BPF_LIRC_MODE2
-        # scripts/config -d CONFIG_BPF_KPROBE_OVERRIDE
+        scripts/config -d CONFIG_CGROUP_BPF
+        scripts/config -d CONFIG_BPF_LSM
+        scripts/config -d CONFIG_BPF_PRELOAD
+        scripts/config -d CONFIG_BPF_LIRC_MODE2
+        scripts/config -d CONFIG_BPF_KPROBE_OVERRIDE
 
         # https://bbs.archlinux.org/viewtopic.php?pid=1824594#p1824594
         scripts/config -e CONFIG_PSI_DEFAULT_DISABLED
@@ -301,13 +301,13 @@ prepare() {
         yes "" | make ${BUILD_FLAGS[*]} CFLAGS="-Xclang -load -Xclang LLVMPolly.so" CXXFLAGS="-Xclang -load -Xclang LLVMPolly.so -stdlib=libc++" config >/dev/null
         diff -u ../config .config || :
 
-	#make ${BUILD_FLAGS[*]} LSMOD="$HOME/.config/modprobed.db" localmodconfig
+	# make ${BUILD_FLAGS[*]} LSMOD="$HOME/.config/modprobed.db" localmodconfig
 
         ### Prepared version
         make -s kernelrelease > version
         echo "Prepared $pkgbase version $(<version)"
 
-        #make ${BUILD_FLAGS[*]} nconfig
+        # make ${BUILD_FLAGS[*]} nconfig
 
         ### Save configuration for later reuse
         echo "Save configuration for later reuse..."
